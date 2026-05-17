@@ -5,143 +5,175 @@
   <title>Monster Tools</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    :root{
+      --bg-1: #0f1724;
+      --bg-2: #071028;
+      --accent-1: #7c3aed;
+      --accent-2: #06b6d4;
+      --muted: #9ca3af;
+      --card: rgba(255,255,255,0.03);
+    }
+    html,body{height:100%;}
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #050816;
-      color: #f5f5f5
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background: radial-gradient(800px 400px at 10% 10%, rgba(124,58,237,0.08), transparent),
+                  radial-gradient(600px 300px at 90% 90%, rgba(6,182,212,0.06), transparent),
+                  linear-gradient(180deg,var(--bg-1),var(--bg-2));
+      color: #eef2ff;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:flex;
+      flex-direction:column;
     }
     header {
-      padding: 20px 32px;
+      padding: 18px 32px;
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start;
       align-items: center;
-      background: #0b1020;
-      border-bottom: 1px solid #1f2937;
+      gap: 18px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid rgba(255,255,255,0.03);
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 20;
     }
     .logo {
-      font-weight: 700;
-      letter-spacing: 0.08em;
+      font-weight: 800;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      font-size: 14px;
-      color: #a5b4fc;
-    }
-    .apps-link {
-      font-size: 14px;
-      color: #e5e7eb;
-      text-decoration: none;
-      opacity: 0.8;
-    }
-    .apps-link:hover {
-      opacity: 1;
+      font-size: 16px;
+      color: white;
+      background: linear-gradient(90deg,var(--accent-1),var(--accent-2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
     main {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 32px 16px 64px;
+      max-width: 1100px;
+      margin: 32px auto;
+      padding: 32px 20px 96px;
+      width:100%;
+    }
+    .hero {
+      display:flex;
+      gap:24px;
+      align-items:center;
+      margin-bottom:28px;
+    }
+    .hero-graphic{
+      width:140px;height:140px;border-radius:22px;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
+      box-shadow: 0 8px 30px rgba(2,6,23,0.6);display:flex;align-items:center;justify-content:center;font-size:48px;color:white;font-weight:800;
     }
     .hero-title {
-      font-size: 32px;
-      font-weight: 700;
-      margin-bottom: 8px;
+      font-size:40px;
+      font-weight:800;
+      margin:0 0 6px 0;
+      line-height:1.02;
+      background: linear-gradient(90deg,#fff, #dbeafe 60%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing:-0.01em;
     }
     .hero-subtitle {
-      font-size: 16px;
-      color: #9ca3af;
-      margin-bottom: 24px;
+      font-size:16px;
+      color:var(--muted);
+      margin:0;
+      max-width:780px;
     }
     .apps-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-      margin-top: 24px;
+      gap: 18px;
+      margin-top: 20px;
     }
     .app-card {
-      background: #0b1020;
-      border-radius: 12px;
-      padding: 16px 18px 18px;
-      border: 1px solid #1f2937;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius: 14px;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,0.03);
+      box-shadow: 0 6px 18px rgba(2,6,23,0.6);
+      transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms;
     }
-    .app-name {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-    .app-tagline {
-      font-size: 14px;
-      color: #9ca3af;
-      margin-bottom: 12px;
-    }
-    .app-links a {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: #a5b4fc;
-      text-decoration: none;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(129, 140, 248, 0.4);
-    }
-    .app-links a:hover {
-      background: rgba(129, 140, 248, 0.1);
-    }
-    footer {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 24px 16px 40px;
-      font-size: 12px;
-      color: #6b7280;
-      border-top: 1px solid #1f2937;
-    }
+    .app-card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(2,6,23,0.7)}
+    .app-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+    .app-icon{width:44px;height:44px;border-radius:10px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;font-size:20px}
+    .app-name{font-size:18px;font-weight:700}
+    .app-tagline{font-size:13px;color:var(--muted);margin:6px 0 12px}
+    .app-links span, .app-links a{font-size:13px;color:var(--accent-2);padding:6px 10px;border-radius:999px;border:1px solid rgba(6,182,212,0.12);text-decoration:none}
+    footer{max-width:1100px;margin:0 auto;padding:28px 20px 56px;font-size:13px;color:rgba(255,255,255,0.6);border-top:1px solid rgba(255,255,255,0.02);}
+
+    /* Contact floating button */
+    #contact-btn{position:fixed;right:22px;bottom:22px;z-index:60;display:inline-flex;align-items:center;gap:10px;padding:12px 16px;border-radius:999px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:white;text-decoration:none;box-shadow:0 10px 30px rgba(7,22,48,0.6);border:1px solid rgba(255,255,255,0.06);font-weight:700}
+    #contact-btn:hover{transform:translateY(-4px)}
+    @keyframes floaty{0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(0)}}
+    #contact-btn{animation:floaty 4s ease-in-out infinite}
+
     @media (max-width: 600px) {
-      .hero-title {
-        font-size: 24px;
-      }
+      .hero-title{font-size:28px}
+      .hero{flex-direction:column;align-items:flex-start}
+      .hero-graphic{width:100px;height:100px}
     }
   </style>
 </head>
 <body>
   <header>
     <div class="logo">Monster Tools</div>
+<<<<<<< HEAD
     <meta name="google-site-verification" content="XD5w6uhj00YPFUNGUNfrMXXEt750P79tMxV92ROFyqg" />
     </header>
+=======
+  </header>
+>>>>>>> a94d076 (Brand: Thomas Apps → Monster Tools; add contact button; restyle site)
 
   <main>
-    <section>
-      <h1 class="hero-title">Indie apps built fast, shipped clean.</h1>
-      <p class="hero-subtitle">
-        A small collection of focused tools from Monster Tools — simple, reliable, and designed to just work.
-      </p>
+    <section class="hero">
+      <div class="hero-graphic">MT</div>
+      <div>
+        <h1 class="hero-title">Indie apps built fast, shipped clean.</h1>
+        <p class="hero-subtitle">A small collection of focused tools from Monster Tools — simple, reliable, and designed to just work. Built with care, ship with pride.</p>
+      </div>
     </section>
 
     <section id="apps">
       <h2>Apps</h2>
       <div class="apps-grid">
         <article class="app-card">
-          <div class="app-name">MedRemindr</div>
-          <div class="app-tagline">Smart medication reminders with clean, safe data handling.</div>
+          <div class="app-head">
+            <div class="app-icon">💊</div>
+            <div>
+              <div class="app-name">MedRemindr</div>
+              <div class="app-tagline">Smart medication reminders with clean, safe data handling.</div>
+            </div>
+          </div>
           <div class="app-links">
             <span>Closed Beta — Coming Soon</span>
           </div>
         </article>
 
         <article class="app-card">
-          <div class="app-name">SHOWTRACKR: TV Guide</div>
-          <div class="app-tagline">Track your shows, episodes, and watch history effortlessly.</div>
+          <div class="app-head">
+            <div class="app-icon">📺</div>
+            <div>
+              <div class="app-name">SHOWTRACKR: TV Guide</div>
+              <div class="app-tagline">Track your shows, episodes, and watch history effortlessly.</div>
+            </div>
+          </div>
           <div class="app-links">
-            <a href="https://play.google.com/store/apps/details?id=com.tvshowst&pcampaignid=web_share" target="_blank" rel="noopener noreferrer">
-              Google Play
-            </a>
+            <a href="https://play.google.com/store/apps/details?id=com.tvshowst&pcampaignid=web_share" target="_blank" rel="noopener noreferrer">Google Play</a>
           </div>
         </article>
 
         <article class="app-card">
-          <div class="app-name">Grocery Buddy - Shopping List</div>
-          <div class="app-tagline">Share grocery lists with family members so everyone shops from the same list.</div>
+          <div class="app-head">
+            <div class="app-icon">🛒</div>
+            <div>
+              <div class="app-name">Grocery Buddy - Shopping List</div>
+              <div class="app-tagline">Share grocery lists with family members so everyone shops from the same list.</div>
+            </div>
+          </div>
           <div class="app-links">
             <span>Closed Beta — Coming Soon</span>
           </div>
@@ -153,6 +185,8 @@
   <footer>
     &copy; <span id="year"></span> Monster Tools. All rights reserved.
   </footer>
+
+  <a id="contact-btn" href="mailto:ultermonster@gmail.com?subject=Hello%20Monster%20Tools&body=Hi%20there,%0D%0A%0D%0AI%20found%20your%20site%20and%20would%20like%20to%20get%20in%20touch.%0D%0A">📧 Contact Me</a>
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();

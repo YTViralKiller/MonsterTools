@@ -173,12 +173,12 @@
     <!-- Embedded game section (hidden by default) -->
     <section id="game-section" style="display:none; margin-top:28px;">
       <h2>Game</h2>
-      <div id="game-container" style="width:100%;max-width:900px;height:480px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 6px 18px rgba(2,6,23,0.6);padding:12px;box-sizing:border-box;">
-        <div id="game-ui" style="display:flex;height:100%;gap:12px;">
+      <div id="game-container" style="width:100%;max-width:900px;height:min(60vh,480px);background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 6px 18px rgba(2,6,23,0.6);padding:12px;box-sizing:border-box;overflow:hidden;">
+      <div id="game-ui" style="display:flex;height:100%;gap:12px;flex-wrap:wrap;align-items:flex-start;">
           <div id="phaser-root" style="flex:1; background:transparent;">
             <!-- Phaser canvas will be injected here -->
           </div>
-          <div id="game-controls" style="width:260px;color:var(--muted);">
+          <div id="game-controls" style="width:260px;color:var(--muted);min-width:220px;overflow:auto;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
               <strong style="color:var(--accent-2);">UlterMonster Arena</strong>
               <div style="display:flex;gap:8px;align-items:center">

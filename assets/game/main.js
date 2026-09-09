@@ -22,6 +22,9 @@
           const loss = Math.ceil(Math.max(0, needed) * 0.10);
           GameData.player.xp = Math.max(0, GameData.player.xp - loss);
           saveState({player:GameData.player});
+          // restore HP and mana to max after defeat as well
+          GameData.player.hp = GameData.player.maxHp;
+          GameData.player.mana = GameData.player.maxMana;
           body = `You lost the fight and lost ${loss} XP towards next level.`;
         }
         const bodyText = s.add.text(W/2, H/2 + 4, body, { font:'16px Arial', fill:'#dbeafe', align:'center', wordWrap:{ width: W-180 } }).setOrigin(0.5);
@@ -264,15 +267,22 @@
 
       // sprites (use generated textures if present)
       let pSprite, eSprite;
+      // portrait size (relative to canvas) - make them large like AdventureQuest portraits
+      const portraitW = Math.floor(Math.min(360, W * 0.45));
+      const portraitH = Math.floor(Math.min(240, H * 0.5));
+      const pX = Math.floor(W * 0.16);
+      const eX = Math.floor(W * 0.84);
+      const pY = Math.floor(H * 0.60);
+      const eY = Math.floor(H * 0.45);
       if(s.textures.exists('char-player')){
-        pSprite = s.add.image(160,240,'char-player').setDisplaySize(128,128);
+        pSprite = s.add.image(pX, pY, 'char-player').setDisplaySize(portraitW, portraitH);
       } else {
-        pSprite = s.add.rectangle(160,240,96,96,0x7c3aed).setStrokeStyle(3,0x2b1650);
+        pSprite = s.add.rectangle(pX, pY, portraitW * 0.8, portraitH * 0.9, 0x7c3aed).setStrokeStyle(3,0x2b1650);
       }
       if(s.textures.exists('char-enemy')){
-        eSprite = s.add.image(480,180,'char-enemy').setDisplaySize(128,128);
+        eSprite = s.add.image(eX, eY, 'char-enemy').setDisplaySize(portraitW, portraitH);
       } else {
-        eSprite = s.add.rectangle(480,180,96,96,0x06b6d4).setStrokeStyle(3,0x03474b);
+        eSprite = s.add.rectangle(eX, eY, portraitW * 0.8, portraitH * 0.9, 0x06b6d4).setStrokeStyle(3,0x03474b);
       }
 
       // idle bobbing animation for sprites
@@ -286,37 +296,48 @@
       s.add.text(160,320, player.name, { font:'14px Arial', fill:'#fff' }).setOrigin(0.5);
       s.add.text(480,100, enemy.name, { font:'14px Arial', fill:'#fff' }).setOrigin(0.5);
 
-      // HP bars
-      const pBarBg = s.add.rectangle(160,200,140,16,0x0b1220).setOrigin(0.5);
-      const pBar = s.add.rectangle(90,200,140,16,0xff5555).setOrigin(0,0.5);
-      const pText = s.add.text(160,200,`${player.hp}/${player.maxHp}`,{font:'12px Arial',fill:'#fff'}).setOrigin(0.5);
-      // mana bar to the right of player bar
-      const mBarBg = s.add.rectangle(260,200,80,12,0x0b1220).setOrigin(0,0.5);
-      const mBar = s.add.rectangle(260-40,200,80,12,0x4fb3ff).setOrigin(0,0.5);
-      const mText = s.add.text(300,196,`${player.mana}/${player.maxMana}`,{font:'11px Arial',fill:'#dbeafe'}).setOrigin(0,0.5);
+      // bottom HUD - a wide panel across the bottom similar to AdventureQuest
+      const hudHeight = Math.floor(Math.max(84, H * 0.18));
+      const hudY = H - Math.floor(hudHeight / 2) - 12;
+      s.add.rectangle(W/2, H - 40, W - 40, hudHeight, 0x15421a).setOrigin(0.5).setDepth(50).setStrokeStyle(2,0x2b6b2b);
 
-      const eBarBg = s.add.rectangle(480,140,140,16,0x0b1220).setOrigin(0.5);
-      const eBar = s.add.rectangle(410,140,140,16,0x88ff88).setOrigin(0,0.5);
+      // HP / Mana bars placed inside bottom HUD for player (left) and enemy (right)
+      const pHudX = Math.floor(W * 0.12);
+      const eHudX = Math.floor(W * 0.88);
+      const barW = Math.floor(W * 0.25);
+      const barH = 18;
+
+      const pBarBg = s.add.rectangle(pHudX, hudY - 6, barW, barH, 0x0b1220).setOrigin(0.5).setDepth(60);
+      const pBar = s.add.rectangle(pHudX - barW/2, hudY - 6, barW, barH, 0xff5555).setOrigin(0,0.5).setDepth(61);
+      const pText = s.add.text(pHudX, hudY - 6, `${player.hp}/${player.maxHp}`, { font: '14px Arial', fill: '#fff' }).setOrigin(0.5).setDepth(62);
+
+      // mana next to HP
+      const mBarBg = s.add.rectangle(pHudX, hudY + 18, Math.floor(barW*0.6), 12, 0x0b1220).setOrigin(0.5).setDepth(60);
+      const mBar = s.add.rectangle(pHudX - Math.floor(barW*0.6)/2, hudY + 18, Math.floor(barW*0.6), 12, 0x4fb3ff).setOrigin(0,0.5).setDepth(61);
+      const mText = s.add.text(pHudX + Math.floor(barW*0.32) + 8, hudY + 14, `${player.mana}/${player.maxMana}`, { font: '13px Arial', fill: '#dbeafe' }).setOrigin(0.5).setDepth(62);
+
+      const eBarBg = s.add.rectangle(eHudX, hudY - 6, barW, barH, 0x0b1220).setOrigin(0.5).setDepth(60);
+      const eBar = s.add.rectangle(eHudX - barW/2, hudY - 6, barW, barH, 0x88ff88).setOrigin(0,0.5).setDepth(61);
       const initialEnemyHp = (typeof enemy.hp === 'number') ? enemy.hp : enemy.maxHp;
-      const eText = s.add.text(480,140,`${initialEnemyHp}/${enemy.maxHp}`,{font:'12px Arial',fill:'#fff'}).setOrigin(0.5);
+      const eText = s.add.text(eHudX, hudY - 6, `${initialEnemyHp}/${enemy.maxHp}`, { font: '14px Arial', fill: '#fff' }).setOrigin(0.5).setDepth(62);
 
       // connect DOM buttons
       const logEl = document.getElementById('game-log');
       function appendLog(msg){ const p = document.createElement('div'); p.textContent = msg; logEl.prepend(p); }
 
-      // create in-canvas stat texts (so data appears inside the battle box)
+      // create in-canvas stat texts (so data appears inside the battle box, above HUD)
       const battleCenterX = W/2, battleCenterY = H/2;
-      const statStyle = { font:'14px Arial', fill:'#dbeafe' };
-      const pStatText = s.add.text(120, 40, '', statStyle).setDepth(900);
-      const eStatText = s.add.text(W-200, 40, '', statStyle).setDepth(900).setOrigin(0,0);
+      const statStyle = { font:'16px Arial', fill:'#dbeafe' };
+      const pStatText = s.add.text(pHudX - 6, hudY - 36, '', statStyle).setDepth(900).setOrigin(0.5);
+      const eStatText = s.add.text(eHudX - 6, hudY - 36, '', statStyle).setDepth(900).setOrigin(0.5);
 
-      // add clickable small icons at bottom-left and bottom-right to view details
+      // add clickable portraits (use big portraits now) at bottom-left and bottom-right to view details
       let playerIcon = null, enemyIcon = null;
       if(s.textures.exists('char-player')){
-        playerIcon = s.add.image(60, H-40, 'char-player').setDisplaySize(64,64).setInteractive({useHandCursor:true}).setDepth(900);
+        playerIcon = pSprite; playerIcon.setInteractive({ useHandCursor: true }).setDepth(200);
       }
       if(s.textures.exists('char-enemy')){
-        enemyIcon = s.add.image(W-60, H-40, 'char-enemy').setDisplaySize(64,64).setInteractive({useHandCursor:true}).setDepth(900);
+        enemyIcon = eSprite; enemyIcon.setInteractive({ useHandCursor: true }).setDepth(200);
       }
       function showEntityStats(isPlayer){
         const cx = s.cameras.main.centerX, cy = s.cameras.main.centerY;
@@ -434,16 +455,24 @@
       atkBtn.onclick = playerAttack;
       healBtn.onclick = playerHeal;
 
-      // create centered in-canvas buttons for attack/heal (use camera center to handle scaling)
+      // create AQ-style vertical combat menu in the center
       const cx = s.cameras.main.centerX;
-      const cy = s.cameras.main.centerY;
-      const btnStyle = { font:'18px Arial', fill:'#fff', backgroundColor:'rgba(7,22,48,0.6)', padding:{x:12,y:8} };
-      // stacked vertical buttons in the middle: Attack above Heal
-      const attackText = s.add.text(cx, cy+80, 'Attack', btnStyle).setOrigin(0.5).setInteractive({ useHandCursor: true });
-      const healText = s.add.text(cx, cy+140, 'Heal', btnStyle).setOrigin(0.5).setInteractive({ useHandCursor: true });
-      attackText.setDepth(1000); healText.setDepth(1000);
-      attackText.on('pointerup', playerAttack);
-      healText.on('pointerup', playerHeal);
+      const menuW = 220, menuH = 360;
+      const menuX = cx - Math.floor(menuW/2), menuY = Math.floor(H*0.18);
+      const menuBg = s.add.rectangle(cx, H/2, 140, 340, 0x1b1b1b).setStrokeStyle(3, 0x777777).setDepth(1200);
+      const menuOptions = ['Attack','Spells','Items','Weapons','Shields','Armor','Pets','Flee'];
+      const menuStartY = H/2 - 150;
+      const menuTexts = [];
+      menuOptions.forEach((opt,i)=>{
+        const y = menuStartY + i * 40;
+        const tbg = s.add.rectangle(cx, y, 160, 34, 0x2a2a2a).setDepth(1201).setStrokeStyle(1,0x000000);
+        const t = s.add.text(cx, y, opt, { font:'18px Arial', fill:'#fff' }).setOrigin(0.5).setDepth(1202).setInteractive({ useHandCursor:true });
+        t.on('pointerover', ()=> tbg.setFillStyle(0x3c3c3c));
+        t.on('pointerout', ()=> tbg.setFillStyle(0x2a2a2a));
+        if(opt === 'Attack') t.on('pointerup', ()=> { playerAttack(); });
+        if(opt === 'Flee') t.on('pointerup', ()=> { appendLog('You fled the battle.'); s.scene.start('MenuScene'); });
+        menuTexts.push(t);
+      });
       // hide DOM buttons while in-battle to avoid UI duplication
       if(atkBtn) atkBtn.style.display = 'none';
       if(healBtn) healBtn.style.display = 'none';

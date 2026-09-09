@@ -527,13 +527,17 @@
         s.tweens.add({ targets: t, y: y-40, alpha:0, duration:900, ease:'Cubic.easeOut', onComplete: ()=> t.destroy() });
       }
 
-      // style buttons to look like clickable panels
-      [attackText, healText].forEach(t=>{
-        t.setPadding(8,6,8,6);
-        t.setStyle({backgroundColor:'rgba(7,22,48,0.4)', stroke:'#022', strokeThickness:2});
-        t.on('pointerover', ()=> t.setStyle({fill:'#fff'}));
-        t.on('pointerout', ()=> t.setStyle({fill:'#fff'}));
-      });
+      // style menu texts to look like clickable panels (if present)
+      try{
+        if(menuTexts && menuTexts.length){
+          menuTexts.forEach(t=>{
+            t.setPadding(8,6,8,6);
+            t.setStyle({backgroundColor:'rgba(7,22,48,0.4)', stroke:'#022', strokeThickness:2});
+            t.on('pointerover', ()=> t.setStyle({fill:'#fff'}));
+            t.on('pointerout', ()=> t.setStyle({fill:'#fff'}));
+          });
+        }
+      }catch(e){}
 
       // initial messages
       appendLog(`A ${enemy.name} appears!`);

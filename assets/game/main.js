@@ -5,6 +5,9 @@
 // Usage: loaded dynamically by index.html showGame();
 
 (function(){
+  // legacy compatibility: some older injected builds referenced attackText/healText
+  // declare here to avoid ReferenceErrors when older code paths attempt to use them
+  var attackText = null, healText = null;
   function ready(fn){
     if(document.readyState==='complete' || document.readyState==='interactive') fn(); else document.addEventListener('DOMContentLoaded',fn);
   }

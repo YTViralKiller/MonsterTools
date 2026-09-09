@@ -226,6 +226,19 @@
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
+
+    // If the page was opened with a hash (e.g., /#apps), remove it without reloading
+    // so the canonical URL stays at the root. This also prevents automatic scrolling.
+    (function(){
+      try {
+        if (window.location.hash) {
+          // Replace the current history entry to remove the fragment identifier
+          history.replaceState(null, document.title, window.location.pathname + window.location.search);
+        }
+      } catch (e) {
+        // ignore errors (older browsers)
+      }
+    })();
   </script>
 </body>
 </html>

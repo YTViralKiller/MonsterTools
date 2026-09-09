@@ -93,7 +93,7 @@
         bigp: { id:'bigp', name:'Big Potion', type:'consumable', effect:{hp:80}, price:30 },
         rustysword: { id:'rustysword', name:'Rusty Sword', type:'weapon', atk:6, price:40 }
       },
-      player: { name: 'Hero', level:1, xp:0, maxHp:120, hp:120, baseAtk:12, gold:50, inventory: [], equipment: { weapon: null } },
+      player: { name: 'Hero', level:1, xp:0, maxHp:120, hp:120, baseAtk:12, gold:50, inventory: [], equipment: { weapon: null }, maxMana:40, mana:40 },
       enemies: [
         { id:'goblin', name:'Goblin', maxHp:60, atk:8, xp:12, gold:8, drops:[{id:'potion',name:'Small Potion',chance:0.5}] },
         { id:'skeleton', name:'Skeleton', maxHp:80, atk:10, xp:18, gold:12, drops:[{id:'potion',name:'Small Potion',chance:0.4}] },
@@ -290,6 +290,10 @@
       const pBarBg = s.add.rectangle(160,200,140,16,0x0b1220).setOrigin(0.5);
       const pBar = s.add.rectangle(90,200,140,16,0xff5555).setOrigin(0,0.5);
       const pText = s.add.text(160,200,`${player.hp}/${player.maxHp}`,{font:'12px Arial',fill:'#fff'}).setOrigin(0.5);
+      // mana bar to the right of player bar
+      const mBarBg = s.add.rectangle(260,200,80,12,0x0b1220).setOrigin(0,0.5);
+      const mBar = s.add.rectangle(260-40,200,80,12,0x4fb3ff).setOrigin(0,0.5);
+      const mText = s.add.text(300,196,`${player.mana}/${player.maxMana}`,{font:'11px Arial',fill:'#dbeafe'}).setOrigin(0,0.5);
 
       const eBarBg = s.add.rectangle(480,140,140,16,0x0b1220).setOrigin(0.5);
       const eBar = s.add.rectangle(410,140,140,16,0x88ff88).setOrigin(0,0.5);
@@ -306,6 +310,38 @@
       const pStatText = s.add.text(120, 40, '', statStyle).setDepth(900);
       const eStatText = s.add.text(W-200, 40, '', statStyle).setDepth(900).setOrigin(0,0);
 
+      // add clickable small icons at bottom-left and bottom-right to view details
+      let playerIcon = null, enemyIcon = null;
+      if(s.textures.exists('char-player')){
+        playerIcon = s.add.image(60, H-40, 'char-player').setDisplaySize(64,64).setInteractive({useHandCursor:true}).setDepth(900);
+      }
+      if(s.textures.exists('char-enemy')){
+        enemyIcon = s.add.image(W-60, H-40, 'char-enemy').setDisplaySize(64,64).setInteractive({useHandCursor:true}).setDepth(900);
+      }
+      function showEntityStats(isPlayer){
+        const cx = s.cameras.main.centerX, cy = s.cameras.main.centerY;
+        const container = s.add.container(0,0).setDepth(2000);
+        const backdrop = s.add.rectangle(cx, cy, W, H, 0x000000, 0.5).setOrigin(0.5);
+        const panel = s.add.rectangle(cx, cy, 420, 260, 0x071028, 0.98).setStrokeStyle(2,0x1b4b67);
+        const titleText = s.add.text(cx, cy-96, isPlayer ? 'Player Stats' : 'Enemy Stats', { font:'20px Arial', fill:'#fff' }).setOrigin(0.5);
+        if(isPlayer){
+          const p = GameData.player;
+          const body = `Level: ${p.level}\nGold: ${p.gold}\nXP: ${p.xp}\nMax HP: ${p.maxHp}\nMax Mana: ${p.maxMana}`;
+          const bodyText = s.add.text(cx, cy - 24, body, { font:'16px Arial', fill:'#dbeafe', align:'left' }).setOrigin(0.5);
+          const closeBtn = s.add.text(cx, cy+92, 'Close', { font:'16px Arial', fill:'#fff', backgroundColor:'rgba(28,120,80,0.95)', padding:{x:8,y:6} }).setOrigin(0.5).setInteractive({useHandCursor:true});
+          closeBtn.on('pointerup', ()=> container.destroy());
+          container.add([backdrop,panel,titleText,bodyText,closeBtn]);
+        } else {
+          const body = `Name: ${enemy.name}\nMax HP: ${enemy.maxHp}\nATK: ${enemy.atk}\nXP Reward: ${enemy.xp}\nGold Reward: ${enemy.gold}`;
+          const bodyText = s.add.text(cx, cy - 24, body, { font:'16px Arial', fill:'#dbeafe', align:'left' }).setOrigin(0.5);
+          const closeBtn = s.add.text(cx, cy+92, 'Close', { font:'16px Arial', fill:'#fff', backgroundColor:'rgba(28,120,80,0.95)', padding:{x:8,y:6} }).setOrigin(0.5).setInteractive({useHandCursor:true});
+          closeBtn.on('pointerup', ()=> container.destroy());
+          container.add([backdrop,panel,titleText,bodyText,closeBtn]);
+        }
+      }
+      if(playerIcon) playerIcon.on('pointerup', ()=> showEntityStats(true));
+      if(enemyIcon) enemyIcon.on('pointerup', ()=> showEntityStats(false));
+
       // hide DOM sidebar while in battle
       try{ var controls = document.getElementById('game-controls'); if(controls) controls.style.display = 'none'; }catch(e){}
 
@@ -321,6 +357,9 @@
         // update in-canvas stats
         pStatText.setText(`HP: ${pHp}/${player.maxHp}\nATK: ${player.atk}`);
         eStatText.setText(`${enemy.name}\nHP: ${eHp}/${enemy.maxHp}`);
+        // update mana
+        const pm = Number(player.mana) || 0;
+        const mw = Phaser.Math.Clamp(pm/player.maxMana,0,1)*80; mBar.width = mw; mText.setText(`${pm}/${player.maxMana}`);
       }
 
       function checkEnd(){
@@ -342,6 +381,9 @@
           if(GameData.player.xp >= GameData.player.level*30){ GameData.player.xp -= GameData.player.level*30; GameData.player.level++; GameData.player.maxHp += 8; leveled = true; }
           GameData.player.hp = Math.min(GameData.player.maxHp, player.hp);
           saveState({player:GameData.player, quests:GameData.quests});
+          // reset player HP and mana to max after outcome
+          GameData.player.hp = GameData.player.maxHp;
+          GameData.player.mana = GameData.player.maxMana;
           // show a victory panel in-canvas
           showOutcome(true, enemy, { xp: enemy.xp, gold: enemy.gold, drops: found, leveled: leveled });
           atkBtn.disabled = true; healBtn.disabled = true; return true;
@@ -374,6 +416,10 @@
 
       function playerHeal(){
         if(healBtn.disabled) return;
+        // cost in mana
+        const cost = 10;
+        if((Number(player.mana) || 0) < cost){ showFloatingNumber(player.x, player.y - 40, `No Mana`, '#ffcccb'); return; }
+        player.mana = Math.max(0, (Number(player.mana) || 0) - cost);
         const heal = Phaser.Math.Between(12,28);
         player.hp = Math.min(player.maxHp, Number(player.hp) + heal);
         // floating heal number

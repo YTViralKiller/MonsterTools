@@ -60,7 +60,13 @@
 
     // Shared game data
     const GameData = {
-      player: { name: 'Hero', level:1, xp:0, maxHp:120, hp:120, atk:12, gold:50, inventory: [] },
+      // Items catalog
+      items: {
+        potion: { id:'potion', name:'Small Potion', type:'consumable', effect:{hp:30}, price:10 },
+        bigp: { id:'bigp', name:'Big Potion', type:'consumable', effect:{hp:80}, price:30 },
+        rustysword: { id:'rustysword', name:'Rusty Sword', type:'weapon', atk:6, price:40 }
+      },
+      player: { name: 'Hero', level:1, xp:0, maxHp:120, hp:120, baseAtk:12, gold:50, inventory: [], equipment: { weapon: null } },
       enemies: [
         { id:'goblin', name:'Goblin', maxHp:60, atk:8, xp:12, gold:8, drops:[{id:'potion',name:'Small Potion',chance:0.5}] },
         { id:'skeleton', name:'Skeleton', maxHp:80, atk:10, xp:18, gold:12, drops:[{id:'potion',name:'Small Potion',chance:0.4}] },
@@ -69,6 +75,16 @@
       ],
       quests: [ { id:'hunt1',name:'Goblin Hunt',target:'goblin',count:3,progress:0,reward:{gold:30,xp:20} } ]
     };
+
+    // Helper: compute player's effective attack including equipped weapon
+    function getPlayerAtk(player){
+      let atk = player.baseAtk || 0;
+      if(player.equipment && player.equipment.weapon){
+        const it = GameData.items[player.equipment.weapon];
+        if(it && it.atk) atk += it.atk;
+      }
+      return atk;
+    }
 
     // Boot scene
     function BootScene(){ Phaser.Scene.call(this, { key:'BootScene' }); }
@@ -86,6 +102,8 @@
       // If saved state exists, load
       const saved = loadState();
       if(saved && saved.player) Object.assign(GameData.player, saved.player);
+      // Ensure equipment structure
+      if(!GameData.player.equipment) GameData.player.equipment = { weapon: null };
       this.scene.start('MenuScene');
     };
 
@@ -139,11 +157,12 @@
       s.add.rectangle(W/2,H/2,W-20,H-20,0x071028).setStrokeStyle(2,0x123a52);
       s.add.text(W/2,60,'Town', { font:'22px Arial', fill:'#fff' }).setOrigin(0.5);
 
-      const items = [ { id:'potion', name:'Small Potion', price:10, effect:{hp:30} }, { id:'bigp', name:'Big Potion', price:30, effect:{hp:80} } ];
-      items.forEach((it, i)=>{
+      // show items from catalog
+      const list = Object.values(GameData.items);
+      list.forEach((it, i)=>{
         const y = 140 + i*60;
-        s.add.text(140,y,it.name + ' - ' + it.price + 'g', { font:'16px Arial', fill:'#dbeafe' }).setInteractive().on('pointerup', ()=>{
-          if(GameData.player.gold >= it.price){ GameData.player.gold -= it.price; GameData.player.inventory.push(it.id); appendLog(`Bought ${it.name}`); saveState({player:GameData.player}); } else appendLog('Not enough gold');
+        s.add.text(140,y,`${it.name} - ${it.price}g`, { font:'16px Arial', fill:'#dbeafe' }).setInteractive().on('pointerup', ()=>{
+          if(GameData.player.gold >= it.price){ GameData.player.gold -= it.price; GameData.player.inventory.push(it.id); appendLog(`Bought ${it.name}`); saveState({player:GameData.player}); updateSidebar(); } else appendLog('Not enough gold');
         });
       });
 
@@ -158,17 +177,39 @@
       const s = this;
       s.add.rectangle(W/2,H/2,W-20,H-20,0x071028).setStrokeStyle(2,0x123a52);
       s.add.text(W/2,60,'Inventory', { font:'22px Arial', fill:'#fff' }).setOrigin(0.5);
-      const list = GameData.player.inventory || [];
-      if(list.length===0) s.add.text(W/2,160,'(empty)',{font:'16px Arial',fill:'#9ca3af'}).setOrigin(0.5);
-      list.forEach((it,i)=>{
-        const y = 140 + i*36;
-        s.add.text(120,y,it, { font:'14px Arial', fill:'#dbeafe' }).setInteractive().on('pointerup', ()=>{
-          // use item
-          if(it==='potion'){ GameData.player.hp = Math.min(GameData.player.maxHp, GameData.player.hp + 30); appendLog('Used Small Potion'); } else if(it==='bigp'){ GameData.player.hp = Math.min(GameData.player.maxHp, GameData.player.hp + 80); appendLog('Used Big Potion'); }
-          // remove first occurrence
-          const idx = GameData.player.inventory.indexOf(it); if(idx>=0) GameData.player.inventory.splice(idx,1);
-          saveState({player:GameData.player});
-          s.scene.start('MenuScene');
+      const inv = GameData.player.inventory || [];
+      if(inv.length===0) s.add.text(W/2,160,'(empty)',{font:'16px Arial',fill:'#9ca3af'}).setOrigin(0.5);
+      // compute counts
+      const counts = {};
+      inv.forEach(id=> counts[id] = (counts[id]||0) + 1 );
+      const entries = Object.keys(counts);
+      entries.forEach((id,i)=>{
+        const item = GameData.items[id] || { id:id, name:id };
+        const y = 140 + i*40;
+        const line = s.add.text(120,y,`${item.name} x${counts[id]}`, { font:'14px Arial', fill:'#dbeafe' }).setInteractive();
+        // action text
+        const action = item.type === 'weapon' ? 'Equip' : 'Use';
+        const btn = s.add.text(420,y, action, { font:'14px Arial', fill:'#9ca3af', backgroundColor:'rgba(0,0,0,0.08)' }).setInteractive();
+        btn.on('pointerup', ()=>{
+          if(item.type === 'weapon'){
+            GameData.player.equipment.weapon = item.id;
+            appendLog(`Equipped ${item.name}`);
+            saveState({player:GameData.player});
+            s.scene.start('MenuScene');
+          } else if(item.id === 'potion'){
+            GameData.player.hp = Math.min(GameData.player.maxHp, GameData.player.hp + item.effect.hp);
+            appendLog(`Used ${item.name}`);
+            // remove one
+            const idx = GameData.player.inventory.indexOf(item.id); if(idx>=0) GameData.player.inventory.splice(idx,1);
+            saveState({player:GameData.player});
+            s.scene.start('MenuScene');
+          } else if(item.id === 'bigp'){
+            GameData.player.hp = Math.min(GameData.player.maxHp, GameData.player.hp + item.effect.hp);
+            appendLog(`Used ${item.name}`);
+            const idx = GameData.player.inventory.indexOf(item.id); if(idx>=0) GameData.player.inventory.splice(idx,1);
+            saveState({player:GameData.player});
+            s.scene.start('MenuScene');
+          }
         });
       });
       s.add.text(W/2,360,'Back', { font:'14px Arial', fill:'#9ca3af' }).setOrigin(0.5).setInteractive().on('pointerup', ()=> s.scene.start('MenuScene'));
@@ -191,6 +232,7 @@
 
       // Entities
       const player = Object.assign({}, GameData.player);
+      player.atk = getPlayerAtk(GameData.player);
       if (typeof player.hp === 'undefined' || player.hp === null) player.hp = player.maxHp;
 
       // sprites (use generated textures if present)
@@ -306,6 +348,20 @@
       getPlayer:function(){ return GameData.player; },
       getQuests:function(){ return GameData.quests; }
     };
+
+    // Update sidebar stats in the DOM
+    function updateSidebar(){
+      try{
+        var stat = document.getElementById('player-stats');
+        if(!stat) return;
+        var p = GameData.player;
+        var equipName = p.equipment && p.equipment.weapon ? (GameData.items[p.equipment.weapon] && GameData.items[p.equipment.weapon].name) : '(none)';
+        stat.innerHTML = `<div style="color:var(--muted);font-size:13px">HP: ${p.hp}/${p.maxHp}</div><div style="color:var(--muted);font-size:13px">ATK: ${getPlayerAtk(p)}</div><div style="color:var(--muted);font-size:13px">Gold: ${p.gold}</div><div style="color:var(--muted);font-size:13px">Equipped: ${equipName}</div>`;
+      }catch(e){}
+    }
+
+    // call updateSidebar periodically and after changes
+    setInterval(updateSidebar, 1000);
 
   }
 

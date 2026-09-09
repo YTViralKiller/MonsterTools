@@ -18,10 +18,14 @@
         const scenes = window._phaserGame && window._phaserGame.scene && window._phaserGame.scene.getScenes(true);
         const scene = (scenes && scenes.length) ? scenes[0] : null;
         if(!scene) return;
-        // darken backdrop
-        const panel = scene.add.rectangle(W/2,H/2,W-120,H-120,0x071028,0.95).setStrokeStyle(2,0x1b4b67);
+        // use scene scale to be robust against local W/H scope
+        const sw = (scene.scale && scene.scale.width) ? scene.scale.width : 640;
+        const sh = (scene.scale && scene.scale.height) ? scene.scale.height : 420;
+        // darken backdrop and ensure high depth so it appears above UI
+        const backdrop = scene.add.rectangle(sw/2, sh/2, sw, sh, 0x000000, 0.55).setDepth(1999).setInteractive();
+        const panel = scene.add.rectangle(sw/2, sh/2, sw-120, sh-120, 0x071028, 0.98).setStrokeStyle(2,0x1b4b67).setDepth(2000);
         const title = victory ? 'Victory!' : 'Defeat';
-        const titleText = scene.add.text(W/2, H/2 - 30, title, { font:'26px Arial', fill:'#fff' }).setOrigin(0.5);
+        const titleText = scene.add.text(sw/2, sh/2 - 30, title, { font:'26px Arial', fill:'#fff' }).setOrigin(0.5).setDepth(2001);
         let body = '';
         if(victory){ body = `You gained ${details.xp} XP and ${details.gold} gold.`; if(details.drops && details.drops.length) body += '\nFound: ' + details.drops.join(', '); if(details.leveled) body += '\nYou leveled up!'; }
         else { // defeat penalty: lose 10% of XP-to-next-level
@@ -34,15 +38,16 @@
           GameData.player.mana = GameData.player.maxMana;
           body = `You lost the fight and lost ${loss} XP towards next level.`;
         }
-        const bodyText = scene.add.text(W/2, H/2 + 4, body, { font:'16px Arial', fill:'#dbeafe', align:'center', wordWrap:{ width: W-180 } }).setOrigin(0.5);
-        const cont = scene.add.text(W/2, H/2 + 70, 'Continue', { font:'18px Arial', fill:'#fff', backgroundColor:'rgba(28,120,80,0.9)', padding:{x:10,y:8} }).setOrigin(0.5).setInteractive();
+        const bodyText = scene.add.text(sw/2, sh/2 + 4, body, { font:'16px Arial', fill:'#dbeafe', align:'center', wordWrap:{ width: sw-180 } }).setOrigin(0.5).setDepth(2001);
+        const cont = scene.add.text(sw/2, sh/2 + 70, 'Continue', { font:'18px Arial', fill:'#fff', backgroundColor:'rgba(28,120,80,0.9)', padding:{x:10,y:8} }).setOrigin(0.5).setInteractive().setDepth(2001);
         cont.on('pointerup', ()=>{
           // cleanup
+          try{ backdrop.destroy(); }catch(e){}
           panel.destroy(); titleText.destroy(); bodyText.destroy(); cont.destroy();
           // restore DOM buttons
           try{ var atk=document.getElementById('attack-btn'), heal=document.getElementById('heal-btn'); if(atk) atk.style.display=''; if(heal) heal.style.display=''; }catch(e){}
           // proceed depending on outcome
-          if(victory) scene.scene.start('MenuScene'); else scene.scene.start('MenuScene');
+          scene.scene.start('MenuScene');
         });
       }
 
@@ -267,6 +272,10 @@
       const enemy = Object.assign({}, enemyTemplate);
       // ensure runtime hp value
       enemy.hp = enemy.maxHp;
+
+      // for a fresh battle, restore player HP/mana to max to start clean
+      GameData.player.hp = GameData.player.maxHp;
+      GameData.player.mana = GameData.player.maxMana;
 
       // Entities
       const player = Object.assign({}, GameData.player);

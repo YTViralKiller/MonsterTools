@@ -273,14 +273,37 @@
       var gameLoaded = false;
       function loadGameScript(cb){
         if (gameLoaded) return cb && cb(null);
+        // install global JS error handler to capture initialization errors
+        if(!window._gameErrorHandlerInstalled){
+          window._gameErrorHandlerInstalled = true;
+          window.onerror = function(msg, src, line, col, err){
+            try{ var log=document.getElementById('game-log'); if(log){ log.textContent = 'Error: '+(err && err.stack? err.stack : msg + ' at ' + src + ':' + line + ':' + col); } }catch(e){}
+            console.error('Global error', msg, src, line, col, err);
+          };
+          window.addEventListener('unhandledrejection', function(ev){ try{ var log=document.getElementById('game-log'); if(log) log.textContent = 'UnhandledRejection: '+ (ev.reason && ev.reason.stack ? ev.reason.stack : ev.reason); }catch(e){}; console.error('UnhandledRejection', ev); });
+        }
         try{
-          var s = document.createElement('script');
-          s.src = 'assets/game/main.js';
-          s.onload = function(){ gameLoaded = true; console.log('Game script loaded'); cb && cb(null); };
-          s.onerror = function(ev){ console.error('Failed to load game script', ev); cb && cb(new Error('Failed to load game script')); };
-          document.body.appendChild(s);
-          // safety timeout if script doesn't initialize
-          setTimeout(function(){ if(!gameLoaded) { console.warn('Game script not initialized after timeout'); cb && cb(new Error('Game script init timeout')); } }, 4000);
+          function loadMain(){
+            var s = document.createElement('script');
+            s.src = 'assets/game/main.js';
+            s.onload = function(){ gameLoaded = true; console.log('Game script loaded'); cb && cb(null); };
+            s.onerror = function(ev){ console.error('Failed to load game script', ev); cb && cb(new Error('Failed to load game script')); };
+            document.body.appendChild(s);
+            // safety timeout if script doesn't initialize
+            setTimeout(function(){ if(!gameLoaded) { console.warn('Game script not initialized after timeout'); cb && cb(new Error('Game script init timeout')); } }, 7000);
+          }
+          // load Phaser first if missing, then main
+          if(typeof window.Phaser === 'undefined'){
+            var p = document.createElement('script');
+            p.src = 'https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js';
+            p.onload = function(){ console.log('Phaser loaded'); loadMain(); };
+            p.onerror = function(ev){ console.error('Failed to load Phaser', ev); cb && cb(new Error('Failed to load Phaser')); };
+            document.head.appendChild(p);
+            // extend timeout for phaser load
+            setTimeout(function(){ if(typeof window.Phaser === 'undefined'){ console.warn('Phaser not available after timeout'); cb && cb(new Error('Phaser load timeout')); } }, 7000);
+          } else {
+            loadMain();
+          }
         }catch(e){ console.error(e); cb && cb(e); }
       }
 

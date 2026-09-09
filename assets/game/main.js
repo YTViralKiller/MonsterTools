@@ -62,7 +62,6 @@
       backgroundColor: '#071028',
       scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
       scene: [BootScene, MenuScene, WorldScene, TownScene, BattleScene, InventoryScene]
-      }catch(e){ console.error('BattleScene create error', e); appendLog && appendLog('Battle failed to start: '+(e.message||e)); }
     };
 
     // Audio helper (simple beeps) and mute state

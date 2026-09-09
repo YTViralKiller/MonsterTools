@@ -62,10 +62,12 @@
     const GameData = {
       player: { name: 'Hero', level:1, xp:0, maxHp:120, hp:120, atk:12, gold:50, inventory: [] },
       enemies: [
-        { id:'goblin', name:'Goblin', maxHp:60, atk:8, xp:12, gold:8 },
-        { id:'skeleton', name:'Skeleton', maxHp:80, atk:10, xp:18, gold:12 },
-        { id:'orc', name:'Orc', maxHp:120, atk:14, xp:30, gold:25 }
-      ]
+        { id:'goblin', name:'Goblin', maxHp:60, atk:8, xp:12, gold:8, drops:[{id:'potion',name:'Small Potion',chance:0.5}] },
+        { id:'skeleton', name:'Skeleton', maxHp:80, atk:10, xp:18, gold:12, drops:[{id:'potion',name:'Small Potion',chance:0.4}] },
+        { id:'orc', name:'Orc', maxHp:120, atk:14, xp:30, gold:25, drops:[{id:'bigp',name:'Big Potion',chance:0.35},{id:'rustysword',name:'Rusty Sword',chance:0.12}] },
+        { id:'wyrm', name:'Wyrm', maxHp:200, atk:20, xp:70, gold:60, drops:[{id:'wyrm-scale',name:'Wyrm Scale',chance:0.25},{id:'bigp',name:'Big Potion',chance:0.5}] }
+      ],
+      quests: [ { id:'hunt1',name:'Goblin Hunt',target:'goblin',count:3,progress:0,reward:{gold:30,xp:20} } ]
     };
 
     // Boot scene
@@ -229,9 +231,19 @@
       function checkEnd(){
         if(enemy.hp<=0){ appendLog(`${enemy.name} defeated! You gain ${enemy.xp} XP and ${enemy.gold} gold.`); GameData.player.xp += enemy.xp; GameData.player.gold += enemy.gold; // level up
           if(GameData.player.xp >= GameData.player.level*30){ GameData.player.xp -= GameData.player.level*30; GameData.player.level++; GameData.player.maxHp += 8; GameData.player.atk += 2; appendLog('You leveled up!'); }
+          // handle drops
+          if(enemy.drops && enemy.drops.length){
+            enemy.drops.forEach(d=>{
+              if(Math.random() < d.chance){ GameData.player.inventory.push(d.id); appendLog(`Found item: ${d.name}`); }
+            });
+          }
+          // quest progression
+          GameData.quests.forEach(q=>{
+            if(q.target===enemy.id && q.progress < q.count){ q.progress++; appendLog(`Quest '${q.name}': ${q.progress}/${q.count}`); if(q.progress>=q.count){ GameData.player.gold += q.reward.gold; GameData.player.xp += q.reward.xp; appendLog(`Quest complete! Reward: ${q.reward.gold}g, ${q.reward.xp} XP`); } }
+          });
           // save
           GameData.player.hp = Math.min(GameData.player.maxHp, player.hp);
-          saveState({player:GameData.player});
+          saveState({player:GameData.player, quests:GameData.quests});
           atkBtn.disabled = true; healBtn.disabled = true; return true;
         }
         if(player.hp<=0){ appendLog('You were defeated...'); GameData.player.hp = 1; saveState({player:GameData.player}); atkBtn.disabled=true; healBtn.disabled=true; return true; }
@@ -281,6 +293,12 @@
 
     // Helper to append to DOM log from scenes
     function appendLog(msg){ const log = document.getElementById('game-log'); if(log){ const p=document.createElement('div'); p.textContent=msg; log.prepend(p); } }
+
+    // Expose quest and inventory helpers to global for quick UI checks
+    window._gameProbe = {
+      getPlayer:function(){ return GameData.player; },
+      getQuests:function(){ return GameData.quests; }
+    };
 
   }
 

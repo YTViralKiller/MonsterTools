@@ -381,6 +381,22 @@
         // update mana
         const pm = Number(player.mana) || 0;
         const mw = Phaser.Math.Clamp(pm/player.maxMana,0,1)*80; mBar.width = mw; mText.setText(`${pm}/${player.maxMana}`);
+        // live-update spells submenu heal enable/disable if open
+        try{
+          if(spellsHealText){
+            if(pm < 10){
+              spellsHealText.setAlpha(0.45);
+              spellsHealText.disableInteractive && spellsHealText.disableInteractive();
+            } else {
+              spellsHealText.setAlpha(1);
+              spellsHealText.setInteractive && spellsHealText.setInteractive({ useHandCursor:true });
+            }
+          }
+          // also update any menu icons to reflect disabled state
+          if(menuTexts && menuTexts.length){
+            menuTexts.forEach(mt=>{ if(mt.icon){ if(mt.text === 'Spells' && pm < 10){ mt.icon.setAlpha(0.5); } else { mt.icon.setAlpha(1); } } });
+          }
+        }catch(e){}
       }
 
       function checkEnd(){

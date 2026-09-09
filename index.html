@@ -181,7 +181,13 @@
           <div id="game-controls" style="width:260px;color:var(--muted);">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
               <strong style="color:var(--accent-2);">UlterMonster Arena</strong>
-              <button id="exit-game" style="background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:6px 8px;border-radius:8px;" onclick="hideGame()">Exit</button>
+              <div style="display:flex;gap:8px;align-items:center">
+                <button id="save-game" title="Save" style="background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:6px 8px;border-radius:8px;">Save</button>
+                <button id="load-game" title="Load" style="background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:6px 8px;border-radius:8px;">Load</button>
+                <button id="restart-game" title="Restart" style="background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:6px 8px;border-radius:8px;">Restart</button>
+                <button id="mute-game" title="Mute" style="background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:6px 8px;border-radius:8px;">Mute</button>
+                <button id="exit-game" style="background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:6px 8px;border-radius:8px;" onclick="hideGame()">Exit</button>
+              </div>
             </div>
             <div id="game-log" style="background:rgba(255,255,255,0.02);padding:8px;border-radius:8px;height:340px;overflow:auto;color:#dbeafe;font-size:13px;">Welcome to the demo arena. Use Attack/Heal to fight an enemy.</div>
             <div style="margin-top:8px;display:flex;gap:8px;">
@@ -278,6 +284,15 @@
           var heal = document.getElementById('heal-btn');
           if(atk) atk.disabled = false;
           if(heal) heal.disabled = false;
+          // wire save/load/restart/mute buttons
+          var saveBtn = document.getElementById('save-game');
+          var loadBtn = document.getElementById('load-game');
+          var restBtn = document.getElementById('restart-game');
+          var muteBtn = document.getElementById('mute-game');
+          if(saveBtn) saveBtn.onclick = function(){ if(window.gameControls) window.gameControls.save(); };
+          if(loadBtn) loadBtn.onclick = function(){ if(window.gameControls) { window.gameControls.load(); location.reload(); } };
+          if(restBtn) restBtn.onclick = function(){ if(window.gameControls) window.gameControls.restart(); };
+          if(muteBtn) muteBtn.onclick = function(){ if(window.gameControls){ var m = window.gameControls.toggleMute(); muteBtn.textContent = m? 'Muted':'Mute'; } };
           // add focus to log
           var log = document.getElementById('game-log'); if(log) log.scrollTop = 0;
         });

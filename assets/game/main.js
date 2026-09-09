@@ -30,6 +30,22 @@
       scene: [BootScene, MenuScene, WorldScene, TownScene, BattleScene, InventoryScene]
     };
 
+    // Audio helper (simple beeps) and mute state
+    const AudioHelper = (function(){
+      let ctx = null; let muted = false;
+      function ensure(){ if(!ctx) try{ ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ ctx = null; } }
+      function beep(freq, time){ if(muted) return; ensure(); if(!ctx) return; const o = ctx.createOscillator(); const g = ctx.createGain(); o.type='sine'; o.frequency.value = freq; o.connect(g); g.connect(ctx.destination); g.gain.setValueAtTime(0.0001, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime+0.01); o.start(); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+ (time||0.12)); o.stop(ctx.currentTime + (time||0.12) + 0.02); }
+      return { beep:beep, toggle:function(){ muted=!muted; return muted; }, setMuted:function(v){ muted=!!v; } };
+    })();
+
+    // expose basic controls to window for DOM buttons
+    window.gameControls = {
+      save:function(){ try{ const st = { player: GameData.player }; localStorage.setItem('ultr_game_save_v1', JSON.stringify(st)); appendLog('Game saved.'); return true;}catch(e){appendLog('Save failed.'); return false;} },
+      load:function(){ try{ const s = localStorage.getItem('ultr_game_save_v1'); if(!s){ appendLog('No saved game found.'); return false; } const obj = JSON.parse(s); if(obj.player) { Object.assign(GameData.player, obj.player); appendLog('Game loaded.'); return true; } }catch(e){ appendLog('Load failed.'); } return false; },
+      restart:function(){ try{ localStorage.removeItem('ultr_game_save_v1'); location.reload(); }catch(e){ location.reload(); } },
+      toggleMute:function(){ const m = AudioHelper.toggle(); appendLog(m? 'Audio muted':'Audio unmuted'); return m; }
+    };
+
     const game = new Phaser.Game(config);
     window._phaserGame = game;
 
@@ -236,6 +252,10 @@
         enemy.hp = Math.max(0, enemy.hp - dmg);
         appendLog(`You hit ${enemy.name} for ${dmg}.`);
         s.tweens.add({targets:eSprite, x:enemy.x-6, yoyo:true, duration:120});
+        // particle burst and sound
+        try{ if(s.add.particles){ const parts = s.add.particles('char-enemy') ; const emitter = parts.createEmitter({ x: enemy.x, y: enemy.y, speed: { min: 40, max: 120 }, angle: { min: 0, max: 360 }, lifespan: 400, scale: { start: 0.5, end: 0 }, blendMode: 'ADD', quantity: 6 }); s.time.delayedCall(300, ()=>{ emitter.stop(); parts.destroy(); }); } }catch(e){}
+        try{ if(window.gameControls) window.gameControls && window.gameControls._play && window.gameControls._play(); }catch(e){}
+        AudioHelper.beep(520,0.08);
         updateUI();
         if(!checkEnd()) setTimeout(enemyTurn, 700);
       };
@@ -246,6 +266,7 @@
         player.hp = Math.min(player.maxHp, player.hp + heal);
         appendLog(`You heal ${heal} HP.`);
         s.tweens.add({targets:pSprite, scale:1.06, yoyo:true, duration:120});
+        AudioHelper.beep(360,0.12);
         updateUI();
         setTimeout(enemyTurn,700);
       };

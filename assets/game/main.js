@@ -509,16 +509,26 @@
         const pm = Number(player.mana) || 0;
         if(pm < 10){ healText.setAlpha(0.45); healText.disableInteractive(); } else { healText.setAlpha(1); }
       }
+      // build a centered action menu with styled panels and better hit targets
+      const menuContainer = s.add.container(cx, menuStartY - 20).setDepth(1200);
       menuOptions.forEach((opt,i)=>{
-        const y = menuStartY + i * 40;
-        const tbg = s.add.rectangle(cx, y, 160, 34, 0x2a2a2a).setDepth(1201).setStrokeStyle(1,0x000000);
-        const t = s.add.text(cx, y, opt, { font:'18px Arial', fill:'#fff' }).setOrigin(0.5).setDepth(1202).setInteractive({ useHandCursor:true });
-        t.on('pointerover', ()=> tbg.setFillStyle(0x3c3c3c));
-        t.on('pointerout', ()=> tbg.setFillStyle(0x2a2a2a));
-        if(opt === 'Attack') t.on('pointerup', ()=> { playerAttack(); });
-        if(opt === 'Spells') t.on('pointerup', ()=> { openSpellsMenu(); });
-        if(opt === 'Flee') t.on('pointerup', ()=> { appendLog('You fled the battle.'); s.scene.start('MenuScene'); });
-        menuTexts.push(t);
+        const y = i * 48;
+        // main panel
+        const bg = s.add.rectangle(0, y, 240, 42, 0x1f2937).setOrigin(0.5).setDepth(1201).setStrokeStyle(2, 0x071422);
+        // inner bevel/highlight
+        const inner = s.add.rectangle(0, y+3, 210, 28, 0x0f1724).setOrigin(0.5).setDepth(1202);
+        const txt = s.add.text(0, y, opt, { font:'20px Arial', fill:'#e6eef8', stroke:'#001622', strokeThickness:2 }).setOrigin(0.5).setDepth(1203);
+        // make the background interactive so users have a larger clickable area
+        bg.setInteractive({ useHandCursor: true });
+        bg.on('pointerover', ()=>{ bg.setFillStyle(0x334155); txt.setStyle({ fill:'#ffffff' }); bg.setScale(1.02); });
+        bg.on('pointerout', ()=>{ bg.setFillStyle(0x1f2937); txt.setStyle({ fill:'#e6eef8' }); bg.setScale(1); });
+        bg.on('pointerup', ()=>{
+          if(opt === 'Attack') { playerAttack(); }
+          else if(opt === 'Spells') { openSpellsMenu(); }
+          else if(opt === 'Flee') { appendLog('You fled the battle.'); s.scene.start('MenuScene'); }
+        });
+        menuContainer.add([bg, inner, txt]);
+        menuTexts.push(txt);
       });
       // hide DOM buttons while in-battle to avoid UI duplication
       if(atkBtn) atkBtn.style.display = 'none';

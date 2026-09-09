@@ -11,10 +11,14 @@
 
       // Outcome modal (victory/defeat)
       function showOutcome(victory, enemyRef, details){
+        // Use the currently active Phaser scene to show the outcome (avoid relying on outer 's' variable)
+        const scenes = window._phaserGame && window._phaserGame.scene && window._phaserGame.scene.getScenes(true);
+        const scene = (scenes && scenes.length) ? scenes[0] : null;
+        if(!scene) return;
         // darken backdrop
-        const panel = s.add.rectangle(W/2,H/2,W-120,H-120,0x071028,0.95).setStrokeStyle(2,0x1b4b67);
+        const panel = scene.add.rectangle(W/2,H/2,W-120,H-120,0x071028,0.95).setStrokeStyle(2,0x1b4b67);
         const title = victory ? 'Victory!' : 'Defeat';
-        const titleText = s.add.text(W/2, H/2 - 30, title, { font:'26px Arial', fill:'#fff' }).setOrigin(0.5);
+        const titleText = scene.add.text(W/2, H/2 - 30, title, { font:'26px Arial', fill:'#fff' }).setOrigin(0.5);
         let body = '';
         if(victory){ body = `You gained ${details.xp} XP and ${details.gold} gold.`; if(details.drops && details.drops.length) body += '\nFound: ' + details.drops.join(', '); if(details.leveled) body += '\nYou leveled up!'; }
         else { // defeat penalty: lose 10% of XP-to-next-level
@@ -27,15 +31,15 @@
           GameData.player.mana = GameData.player.maxMana;
           body = `You lost the fight and lost ${loss} XP towards next level.`;
         }
-        const bodyText = s.add.text(W/2, H/2 + 4, body, { font:'16px Arial', fill:'#dbeafe', align:'center', wordWrap:{ width: W-180 } }).setOrigin(0.5);
-        const cont = s.add.text(W/2, H/2 + 70, 'Continue', { font:'18px Arial', fill:'#fff', backgroundColor:'rgba(28,120,80,0.9)', padding:{x:10,y:8} }).setOrigin(0.5).setInteractive();
+        const bodyText = scene.add.text(W/2, H/2 + 4, body, { font:'16px Arial', fill:'#dbeafe', align:'center', wordWrap:{ width: W-180 } }).setOrigin(0.5);
+        const cont = scene.add.text(W/2, H/2 + 70, 'Continue', { font:'18px Arial', fill:'#fff', backgroundColor:'rgba(28,120,80,0.9)', padding:{x:10,y:8} }).setOrigin(0.5).setInteractive();
         cont.on('pointerup', ()=>{
           // cleanup
           panel.destroy(); titleText.destroy(); bodyText.destroy(); cont.destroy();
           // restore DOM buttons
           try{ var atk=document.getElementById('attack-btn'), heal=document.getElementById('heal-btn'); if(atk) atk.style.display=''; if(heal) heal.style.display=''; }catch(e){}
           // proceed depending on outcome
-          if(victory) s.scene.start('MenuScene'); else s.scene.start('MenuScene');
+          if(victory) scene.scene.start('MenuScene'); else scene.scene.start('MenuScene');
         });
       }
 

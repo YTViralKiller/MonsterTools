@@ -255,8 +255,7 @@
     BattleScene.prototype.constructor = BattleScene;
     BattleScene.prototype.init = function(data){ this.mode = data.mode || 'arena'; };
     BattleScene.prototype.create = function(){
-      const s = this; 
-      try{
+      const s = this;
         s.add.rectangle(W/2,H/2,W-20,H-20,0x071028).setStrokeStyle(2,0x123a52);
       s.add.text(W/2,22,'Battle', { font:'20px Arial', fill:'#fff' }).setOrigin(0.5);
 

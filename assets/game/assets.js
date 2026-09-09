@@ -13,45 +13,73 @@
     },
 
     createCharacterTextures: function(scene){
-      const w = 96, h = 96;
+      // create higher-resolution 128x128 textures with layered shading/details
+      const w = 128, h = 128;
       const g = scene.make.graphics({x:0,y:0,add:false});
 
-      // Player: draw a simple body, helmet, and weapon silhouette to look more like a character
+      // Player detailed sprite
       g.clear();
-      // body
-      g.fillStyle(0x8653ff,1);
-      g.fillRoundedRect(w/2-26, h/2-6, 52, 64, 8);
-      // helmet
-      g.fillStyle(0x6f3bd6,1);
-      g.fillEllipse(w/2, h/2-24, 56, 40);
-      g.fillStyle(0x2b1650,1);
-      g.fillRect(w/2-20, h/2-30, 40, 14);
+      // ambient silhouette shadow
+      g.fillStyle(0x000000,0.12);
+      g.fillRoundedRect(10, 10, w - 20, h - 20, 16);
+      // torso base
+      g.fillStyle(0x7a4bff,1);
+      g.fillRoundedRect(w/2-36, h/2-2, 72, 84, 12);
+      // torso highlight
+      g.fillStyle(0x9f7dff,0.35);
+      g.fillRoundedRect(w/2-34, h/2+18, 68, 28, 10);
+      // chest plate
+      g.fillStyle(0x4a2da8,1);
+      g.fillEllipse(w/2, h/2+16, 60, 30);
+      // helmet base
+      g.fillStyle(0x5f3be0,1);
+      g.fillEllipse(w/2, h/2-34, 80, 56);
+      // helmet top highlight
+      g.fillStyle(0xc3b2ff,0.22);
+      g.fillEllipse(w/2-8, h/2-42, 50, 22);
+      // visor
+      g.fillStyle(0x1f1430,1);
+      g.fillRect(w/2-36, h/2-44, 72, 18);
       // eyes
       g.fillStyle(0xffffff,1);
-      g.fillRect(w/2 - 14, h/2 - 28, 10, 6);
-      g.fillRect(w/2 + 4, h/2 - 28, 10, 6);
-      // sword on back
+      g.fillRect(w/2-18, h/2-42, 12, 8);
+      g.fillRect(w/2+6, h/2-42, 12, 8);
+      // blade and hilt
       g.fillStyle(0xffe8a6,1);
-      g.fillRect(w/2+18, h/2+4, 6, 36);
-      g.fillTriangle(w/2+14, h/2+4, w/2+26, h/2+4, w/2+20, h/2-4);
+      g.fillRoundedRect(w/2+34, h/2-10, 10, 66, 4);
+      g.fillTriangle(w/2+28, h/2-10, w/2+46, h/2-10, w/2+37, h/2-24);
+      g.fillStyle(0xd3a24a,1);
+      g.fillRect(w/2+31, h/2+8, 16, 6);
       g.generateTexture('char-player', w, h);
 
-      // Enemy: wyrm-like accent color with eyes and teeth
+      // Enemy detailed sprite
       g.clear();
-      // enemy body
+      // base body
       g.fillStyle(0x07c4d9,1);
-      g.fillRoundedRect(w/2-28, h/2-12, 56, 72, 10);
-      // head crest
-      g.fillStyle(0x06a6b0,1);
-      g.fillTriangle(w/2-28, h/2-24, w/2, h/2-56, w/2+28, h/2-24);
+      g.fillRoundedRect(w/2-40, h/2-12, 80, 94, 14);
+      // scale-like layered shading
+      for(let i=0; i<6; i++){
+        g.fillStyle(0x068f9a, 0.1 + i * 0.06);
+        g.fillEllipse(w/2, h/2 - 4 + i * 10, 72 - i * 6, 30);
+      }
+      // crest
+      g.fillStyle(0x024a4f,1);
+      g.fillTriangle(w/2-36, h/2-42, w/2, h/2-78, w/2+36, h/2-42);
+      // jaw shadow
+      g.fillStyle(0x035e66,0.45);
+      g.fillEllipse(w/2, h/2+18, 64, 26);
       // eyes
       g.fillStyle(0xffffff,1);
-      g.fillRect(w/2 - 12, h/2 - 8, 12, 6);
-      g.fillRect(w/2 + 2, h/2 - 8, 12, 6);
+      g.fillRect(w/2-18, h/2-18, 14, 8);
+      g.fillRect(w/2+4, h/2-18, 14, 8);
+      // pupils
+      g.fillStyle(0x001122,1);
+      g.fillRect(w/2-14, h/2-16, 6, 4);
+      g.fillRect(w/2+8, h/2-16, 6, 4);
       // fangs
       g.fillStyle(0xffffff,1);
-      g.fillTriangle(w/2 - 6, h/2 + 8, w/2 - 2, h/2 + 2, w/2 - 2, h/2 + 12);
-      g.fillTriangle(w/2 + 2, h/2 + 8, w/2 + 6, h/2 + 2, w/2 + 2, h/2 + 12);
+      g.fillTriangle(w/2-10, h/2+8, w/2-6, h/2-2, w/2-4, h/2+12);
+      g.fillTriangle(w/2+4, h/2+8, w/2+8, h/2-2, w/2+6, h/2+12);
       g.generateTexture('char-enemy', w, h);
 
       g.destroy();

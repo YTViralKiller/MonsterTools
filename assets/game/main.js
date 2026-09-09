@@ -265,15 +265,19 @@
       // sprites (use generated textures if present)
       let pSprite, eSprite;
       if(s.textures.exists('char-player')){
-        pSprite = s.add.image(160,240,'char-player').setDisplaySize(96,96);
+        pSprite = s.add.image(160,240,'char-player').setDisplaySize(128,128);
       } else {
         pSprite = s.add.rectangle(160,240,96,96,0x7c3aed).setStrokeStyle(3,0x2b1650);
       }
       if(s.textures.exists('char-enemy')){
-        eSprite = s.add.image(480,180,'char-enemy').setDisplaySize(96,96);
+        eSprite = s.add.image(480,180,'char-enemy').setDisplaySize(128,128);
       } else {
         eSprite = s.add.rectangle(480,180,96,96,0x06b6d4).setStrokeStyle(3,0x03474b);
       }
+
+      // idle bobbing animation for sprites
+      s.tweens.add({ targets: pSprite, y: pSprite.y + 6, duration: 900, yoyo:true, repeat:-1, ease:'Sine.easeInOut' });
+      s.tweens.add({ targets: eSprite, y: eSprite.y + 6, duration: 1000, yoyo:true, repeat:-1, ease:'Sine.easeInOut' });
 
       // expose positions for tweens/emitter logic
       player.x = pSprite.x; player.y = pSprite.y;

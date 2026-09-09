@@ -284,11 +284,23 @@
         }
         try{
           function loadMain(){
-            var s = document.createElement('script');
-            s.src = 'assets/game/main.js';
-            s.onload = function(){ gameLoaded = true; console.log('Game script loaded'); cb && cb(null); };
-            s.onerror = function(ev){ console.error('Failed to load game script', ev); cb && cb(new Error('Failed to load game script')); };
-            document.body.appendChild(s);
+            // fetch file first and syntax-check before injecting to get clearer errors
+            fetch('assets/game/main.js').then(r=>r.text()).then(txt=>{
+              try{
+                // attempt to parse the script without executing
+                new Function(txt);
+              }catch(err){
+                console.error('Script parse error', err);
+                var log = document.getElementById('game-log'); if(log) log.textContent = 'Script parse error: '+(err && err.stack? err.stack : err.message || err);
+                cb && cb(err);
+                return;
+              }
+              // inject
+              var s = document.createElement('script');
+              s.text = txt;
+              document.body.appendChild(s);
+              gameLoaded = true; console.log('Game script loaded'); cb && cb(null);
+            }).catch(function(err){ console.error('Failed to fetch game script', err); var log=document.getElementById('game-log'); if(log) log.textContent = 'Failed to fetch game script: '+(err.message||err); cb && cb(err); });
             // safety timeout if script doesn't initialize
             setTimeout(function(){ if(!gameLoaded) { console.warn('Game script not initialized after timeout'); cb && cb(new Error('Game script init timeout')); } }, 7000);
           }

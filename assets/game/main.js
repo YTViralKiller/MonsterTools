@@ -62,6 +62,7 @@
       backgroundColor: '#071028',
       scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
       scene: [BootScene, MenuScene, WorldScene, TownScene, BattleScene, InventoryScene]
+      }catch(e){ console.error('BattleScene create error', e); appendLog && appendLog('Battle failed to start: '+(e.message||e)); }
     };
 
     // Audio helper (simple beeps) and mute state
@@ -255,7 +256,9 @@
     BattleScene.prototype.constructor = BattleScene;
     BattleScene.prototype.init = function(data){ this.mode = data.mode || 'arena'; };
     BattleScene.prototype.create = function(){
-      const s = this; s.add.rectangle(W/2,H/2,W-20,H-20,0x071028).setStrokeStyle(2,0x123a52);
+      const s = this; 
+      try{
+        s.add.rectangle(W/2,H/2,W-20,H-20,0x071028).setStrokeStyle(2,0x123a52);
       s.add.text(W/2,22,'Battle', { font:'20px Arial', fill:'#fff' }).setOrigin(0.5);
 
       // pick enemy

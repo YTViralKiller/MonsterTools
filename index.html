@@ -158,12 +158,12 @@
   <header>
     <div class="logo">UlterMonster Core</div>
     <a id="youtube-link" href="https://www.youtube.com/channel/UCaQTHsAhmvXSngD_FdL1qKQ" target="_blank" rel="noopener noreferrer" aria-label="UlterMonster Wrestling on YouTube">▶ UlterMonster Wrestling</a>
-    <a id="game-tab" href="#" style="margin-left:8px;" onclick="showGame();return false;" aria-label="Open game">🎮 Game</a>
+    <a id="game-tab" href="#" style="margin-left:8px;display:none;" onclick="showGame();return false;" aria-label="Open game">🎮 Game</a>
   </header>
 
   <main>
     <section class="hero">
-      <div class="hero-graphic">UMC</div>
+      <div class="hero-graphic" id="umc-icon" title="UlterMonster Core">UMC</div>
       <div>
         <h1 class="hero-title">Indie apps built fast, shipped clean.</h1>
         <p class="hero-subtitle">A small collection of focused tools from UlterMonster Core — simple, reliable, and designed to just work. Built with care, shipped with pride.</p>
@@ -307,6 +307,18 @@
         // scroll to game section
         document.getElementById('game-section').scrollIntoView({behavior:'smooth'});
       };
+
+      // reveal hidden game tab after tapping the UMC icon 10 times
+      (function(){
+        var count=0; var last=0; var icon = document.getElementById('umc-icon');
+        if(!icon) return; icon.style.cursor='pointer';
+        icon.addEventListener('click', function(){
+          var now = Date.now();
+          if(now - last > 3000) count = 0; // reset if slow
+          last = now; count++;
+          if(count>=10){ document.getElementById('game-tab').style.display='inline-block'; count=0; appendLog && appendLog('Secret: Game tab revealed'); }
+        });
+      })();
 
       window.hideGame = function(){
         // try to destroy phaser instance if present

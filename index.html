@@ -22,7 +22,7 @@
     }
 
     html, body {
-      height: 100%;
+      min-height: 100%;
       scroll-behavior: smooth;
     }
 
@@ -37,7 +37,6 @@
       -webkit-font-smoothing: antialiased;
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
     }
 
     /* Cosmic Grid Background Effect */
@@ -96,6 +95,7 @@
       padding: 64px 24px 120px;
       width: 100%;
       box-sizing: border-box;
+      flex-grow: 1;
     }
 
     /* Epic Interactive Hero Segment */
@@ -163,11 +163,12 @@
       background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), transparent);
     }
 
-    /* Expanded Grid and Animated Glass Cards */
+    /* Expanded Grid Layout Fix */
     .apps-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 24px;
+      width: 100%;
     }
 
     .app-card {
@@ -190,7 +191,6 @@
       box-shadow: 0 20px 40px -15px rgba(2, 6, 23, 0.9), 0 0 30px rgba(168, 85, 247, 0.05);
     }
 
-    /* Gold Glow Accent For Games */
     .app-card.game-card:hover {
       border-color: rgba(245, 158, 11, 0.3);
       box-shadow: 0 20px 40px -15px rgba(2, 6, 23, 0.9), 0 0 30px rgba(245, 158, 11, 0.05);
@@ -198,7 +198,7 @@
 
     .app-head {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       gap: 16px;
       margin-bottom: 20px;
     }
@@ -240,12 +240,12 @@
     .app-tagline {
       font-size: 14px;
       color: #94a3b8;
-      margin: 0;
+      margin: 0 0 20px 0;
       line-height: 1.5;
     }
 
     .app-links {
-      margin-top: 24px;
+      margin-top: auto;
     }
 
     .btn-download {
@@ -284,7 +284,7 @@
 
     footer {
       max-width: 1200px;
-      margin: auto auto 0 auto;
+      margin: 0 auto;
       padding: 40px 24px;
       width: 100%;
       font-size: 13px;
@@ -378,3 +378,5 @@
                 <div class="app-status status-live" style="color: #fbbf24; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2);">Strategy Game</div>
               </div>
             </div>
+            <p class="app-tagline">Embark on a medieval puzzle journey. Place your crowns securely across unique colored boards and master the grid without overlapping fields.</p>
+          </div>

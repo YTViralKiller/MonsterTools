@@ -18,35 +18,68 @@
         const scenes = window._phaserGame && window._phaserGame.scene && window._phaserGame.scene.getScenes(true);
         const scene = (scenes && scenes.length) ? scenes[0] : null;
         if(!scene) return;
-        // use scene scale to be robust against local W/H scope
         const sw = (scene.scale && scene.scale.width) ? scene.scale.width : 640;
         const sh = (scene.scale && scene.scale.height) ? scene.scale.height : 420;
-        // darken backdrop and ensure high depth so it appears above UI
+
+        // backdrop and high-depth overlay
         const backdrop = scene.add.rectangle(sw/2, sh/2, sw, sh, 0x000000, 0.55).setDepth(1999).setInteractive();
-        const panel = scene.add.rectangle(sw/2, sh/2, sw-120, sh-120, 0x071028, 0.98).setStrokeStyle(2,0x1b4b67).setDepth(2000);
-        const title = victory ? 'Victory!' : 'Defeat';
-        const titleText = scene.add.text(sw/2, sh/2 - 30, title, { font:'26px Arial', fill:'#fff' }).setOrigin(0.5).setDepth(2001);
-        let body = '';
-        if(victory){ body = `You gained ${details.xp} XP and ${details.gold} gold.`; if(details.drops && details.drops.length) body += '\nFound: ' + details.drops.join(', '); if(details.leveled) body += '\nYou leveled up!'; }
-        else { // defeat penalty: lose 10% of XP-to-next-level
-          const needed = GameData.player.level*30 - GameData.player.xp;
-          const loss = Math.ceil(Math.max(0, needed) * 0.10);
-          GameData.player.xp = Math.max(0, GameData.player.xp - loss);
-          saveState({player:GameData.player});
-          // restore HP and mana to max after defeat as well
-          GameData.player.hp = GameData.player.maxHp;
-          GameData.player.mana = GameData.player.maxMana;
-          body = `You lost the fight and lost ${loss} XP towards next level.`;
+
+        // large title (Victory / Defeat)
+        const titleColor = victory ? '#7ee3ff' : '#ff9b9b';
+        const titleText = scene.add.text(sw/2, sh/2 - 120, victory ? 'Victory!' : 'Defeat', { font:'56px Arial', fill: titleColor, stroke:'#001726', strokeThickness:6 }).setOrigin(0.5).setDepth(2001);
+
+        // parchment-style reward box
+        const panelW = Math.min(360, Math.floor(sw * 0.45));
+        const panelH = Math.floor(sh * 0.42);
+        const panelX = sw/2 + 40;
+        const panelY = sh/2;
+        const parchment = scene.add.rectangle(panelX, panelY, panelW, panelH, 0xfbf3d5).setDepth(2000).setStrokeStyle(3, 0x8b6f3f);
+        // subtle torn edges via small circles
+        for(let i=0;i<6;i++){ scene.add.circle(panelX - panelW/2 + 10 + i*60, panelY - panelH/2 + 6, 8, 0xf3e7c7).setDepth(1999); }
+
+        // content inside parchment
+        const lines = [];
+        if(victory){
+          lines.push(`+ ${details.gold || 0} GOLD`);
+          lines.push(`+ ${details.xp || 0} XP`);
+          if(details.drops && details.drops.length) lines.push('Found: ' + details.drops.join(', '));
+          if(details.leveled) lines.push('You leveled up!');
+        } else {
+          // compute loss message if not provided
+          let lossMsg = '';
+          if(details && details.lostXP){ lossMsg = `${details.lostXP} XP lost`; }
+          else { lossMsg = 'XP lost'; }
+          lines.push(lossMsg);
         }
-        const bodyText = scene.add.text(sw/2, sh/2 + 4, body, { font:'16px Arial', fill:'#dbeafe', align:'center', wordWrap:{ width: sw-180 } }).setOrigin(0.5).setDepth(2001);
-        const cont = scene.add.text(sw/2, sh/2 + 70, 'Continue', { font:'18px Arial', fill:'#fff', backgroundColor:'rgba(28,120,80,0.9)', padding:{x:10,y:8} }).setOrigin(0.5).setInteractive().setDepth(2001);
+
+        const bodyStartY = panelY - Math.floor(panelH/2) + 36;
+        lines.forEach((ln, idx)=>{
+          scene.add.text(panelX, bodyStartY + idx*28, ln, { font:'18px Georgia', fill:'#2b2b2b' }).setOrigin(0.5).setDepth(2001);
+        });
+
+        // coin shower for victory
+        if(victory){
+          for(let i=0;i<10;i++){
+            const cx = panelX - panelW/2 + Math.random()*panelW;
+            const c = scene.add.circle(cx, panelY - panelH/2 - 20 - Math.random()*40, 10, 0xffd54a).setDepth(1998).setAlpha(0.95);
+            scene.tweens.add({ targets: c, y: panelY - panelH/2 + 20 + Math.random()*50, alpha:0.95, duration: 900 + Math.random()*400, ease:'Cubic.easeOut', onComplete: ()=> c.destroy() });
+          }
+        }
+
+        // saving indicator then Continue button
+        const saveText = scene.add.text(panelX, panelY + panelH/2 - 34, 'Saving...', { font:'14px Arial', fill:'#333' }).setOrigin(0.5).setDepth(2001);
+        // perform save then update text
+        try{ saveState({player:GameData.player, quests:GameData.quests}); saveText.setText('Saved.'); }catch(e){ saveText.setText('Save failed'); }
+
+        const cont = scene.add.text(sw/2, sh/2 + 120, 'Continue', { font:'20px Arial', fill:'#fff', backgroundColor:'rgba(28,120,80,0.95)', padding:{x:12,y:8} }).setOrigin(0.5).setInteractive().setDepth(2001);
         cont.on('pointerup', ()=>{
-          // cleanup
           try{ backdrop.destroy(); }catch(e){}
-          panel.destroy(); titleText.destroy(); bodyText.destroy(); cont.destroy();
+          try{ parchment.destroy(); }catch(e){}
+          try{ titleText.destroy(); }catch(e){}
+          try{ saveText.destroy(); }catch(e){}
+          try{ cont.destroy(); }catch(e){}
           // restore DOM buttons
           try{ var atk=document.getElementById('attack-btn'), heal=document.getElementById('heal-btn'); if(atk) atk.style.display=''; if(heal) heal.style.display=''; }catch(e){}
-          // proceed depending on outcome
           scene.scene.start('MenuScene');
         });
       }

@@ -370,10 +370,13 @@
       atkBtn.onclick = playerAttack;
       healBtn.onclick = playerHeal;
 
-      // create centered in-canvas buttons for attack/heal (centered like AdventureQuest)
+      // create centered in-canvas buttons for attack/heal (use camera center to handle scaling)
+      const cx = s.cameras.main.centerX;
+      const cy = s.cameras.main.centerY;
       const btnStyle = { font:'18px Arial', fill:'#fff', backgroundColor:'rgba(7,22,48,0.6)', padding:{x:12,y:8} };
-      const attackText = s.add.text(W/2-90, H-80, 'Attack', btnStyle).setOrigin(0.5).setInteractive();
-      const healText = s.add.text(W/2+90, H-80, 'Heal', btnStyle).setOrigin(0.5).setInteractive();
+      const attackText = s.add.text(cx-90, cy+120, 'Attack', btnStyle).setOrigin(0.5).setInteractive({ useHandCursor: true });
+      const healText = s.add.text(cx+90, cy+120, 'Heal', btnStyle).setOrigin(0.5).setInteractive({ useHandCursor: true });
+      attackText.setDepth(1000); healText.setDepth(1000);
       attackText.on('pointerup', playerAttack);
       healText.on('pointerup', playerHeal);
       // hide DOM buttons while in-battle to avoid UI duplication
@@ -383,8 +386,7 @@
       // style buttons to look like clickable panels
       [attackText, healText].forEach(t=>{
         t.setPadding(8,6,8,6);
-        t.setStyle({backgroundColor:'rgba(7,22,48,0.4)'});
-        t.setInteractive({useHandCursor:true});
+        t.setStyle({backgroundColor:'rgba(7,22,48,0.4)', stroke:'#022', strokeThickness:2});
         t.on('pointerover', ()=> t.setStyle({fill:'#fff'}));
         t.on('pointerout', ()=> t.setStyle({fill:'#fff'}));
       });

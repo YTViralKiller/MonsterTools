@@ -54,6 +54,22 @@
       background-clip: text;
       color: transparent;
     }
+    /* YouTube link button in header (aligns to right) */
+    #youtube-link{
+      margin-left: auto;
+      padding:8px 12px;
+      border-radius:8px;
+      color: white;
+      background: linear-gradient(90deg,var(--accent-1),var(--accent-2));
+      text-decoration:none;
+      font-weight:700;
+      font-size:14px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid rgba(255,255,255,0.06);
+    }
+    #youtube-link:hover{transform:translateY(-3px)}
     main {
       max-width: 1100px;
       margin: 32px auto;
@@ -131,6 +147,7 @@
 <body>
   <header>
     <div class="logo">UlterMonster Core</div>
+    <a id="youtube-link" href="https://www.youtube.com/channel/UCaQTHsAhmvXSngD_FdL1qKQ" target="_blank" rel="noopener noreferrer" aria-label="UlterMonster Wrestling on YouTube">▶ UlterMonster Wrestling</a>
   </header>
 
   <main>

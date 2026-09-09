@@ -463,6 +463,28 @@
       const menuOptions = ['Attack','Spells','Items','Weapons','Shields','Armor','Pets','Flee'];
       const menuStartY = H/2 - 150;
       const menuTexts = [];
+      let spellsSub = null;
+      let spellsHealText = null;
+      function openSpellsMenu(){
+        if(spellsSub) return; // already open
+        spellsSub = s.add.container(0,0).setDepth(1300);
+        const sx = cx + 180, sy = H/2 - 60;
+        const subBg = s.add.rectangle(sx, sy+30, 220, 120, 0x0e1b2b).setStrokeStyle(2,0x2b6b2b);
+        const healText = s.add.text(sx, sy, 'Heal (10 MP)', { font:'16px Arial', fill:'#fff' }).setOrigin(0.5).setInteractive({ useHandCursor:true });
+        spellsHealText = healText;
+        healText.on('pointerup', ()=>{
+          // attempt to cast heal
+          playerHeal();
+          // close submenu
+          if(spellsSub){ spellsSub.destroy(); spellsSub=null; }
+        });
+        const close = s.add.text(sx, sy+48, 'Close', { font:'14px Arial', fill:'#fff', backgroundColor:'rgba(28,120,80,0.9)', padding:{x:8,y:6} }).setOrigin(0.5).setInteractive({ useHandCursor:true });
+        close.on('pointerup', ()=>{ if(spellsSub){ spellsSub.destroy(); spellsSub=null; } });
+        spellsSub.add([subBg, healText, close]);
+        // set initial enabled/disabled state based on mana
+        const pm = Number(player.mana) || 0;
+        if(pm < 10){ healText.setAlpha(0.45); healText.disableInteractive(); } else { healText.setAlpha(1); }
+      }
       menuOptions.forEach((opt,i)=>{
         const y = menuStartY + i * 40;
         const tbg = s.add.rectangle(cx, y, 160, 34, 0x2a2a2a).setDepth(1201).setStrokeStyle(1,0x000000);
@@ -470,6 +492,7 @@
         t.on('pointerover', ()=> tbg.setFillStyle(0x3c3c3c));
         t.on('pointerout', ()=> tbg.setFillStyle(0x2a2a2a));
         if(opt === 'Attack') t.on('pointerup', ()=> { playerAttack(); });
+        if(opt === 'Spells') t.on('pointerup', ()=> { openSpellsMenu(); });
         if(opt === 'Flee') t.on('pointerup', ()=> { appendLog('You fled the battle.'); s.scene.start('MenuScene'); });
         menuTexts.push(t);
       });

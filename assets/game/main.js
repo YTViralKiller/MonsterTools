@@ -9,6 +9,33 @@
     if(document.readyState==='complete' || document.readyState==='interactive') fn(); else document.addEventListener('DOMContentLoaded',fn);
   }
 
+      // Outcome modal (victory/defeat)
+      function showOutcome(victory, enemyRef, details){
+        // darken backdrop
+        const panel = s.add.rectangle(W/2,H/2,W-120,H-120,0x071028,0.95).setStrokeStyle(2,0x1b4b67);
+        const title = victory ? 'Victory!' : 'Defeat';
+        const titleText = s.add.text(W/2, H/2 - 30, title, { font:'26px Arial', fill:'#fff' }).setOrigin(0.5);
+        let body = '';
+        if(victory){ body = `You gained ${details.xp} XP and ${details.gold} gold.`; if(details.drops && details.drops.length) body += '\nFound: ' + details.drops.join(', '); if(details.leveled) body += '\nYou leveled up!'; }
+        else { // defeat penalty: lose 10% of XP-to-next-level
+          const needed = GameData.player.level*30 - GameData.player.xp;
+          const loss = Math.ceil(Math.max(0, needed) * 0.10);
+          GameData.player.xp = Math.max(0, GameData.player.xp - loss);
+          saveState({player:GameData.player});
+          body = `You lost the fight and lost ${loss} XP towards next level.`;
+        }
+        const bodyText = s.add.text(W/2, H/2 + 4, body, { font:'16px Arial', fill:'#dbeafe', align:'center', wordWrap:{ width: W-180 } }).setOrigin(0.5);
+        const cont = s.add.text(W/2, H/2 + 70, 'Continue', { font:'18px Arial', fill:'#fff', backgroundColor:'rgba(28,120,80,0.9)', padding:{x:10,y:8} }).setOrigin(0.5).setInteractive();
+        cont.on('pointerup', ()=>{
+          // cleanup
+          panel.destroy(); titleText.destroy(); bodyText.destroy(); cont.destroy();
+          // restore DOM buttons
+          try{ var atk=document.getElementById('attack-btn'), heal=document.getElementById('heal-btn'); if(atk) atk.style.display=''; if(heal) heal.style.display=''; }catch(e){}
+          // proceed depending on outcome
+          if(victory) s.scene.start('MenuScene'); else s.scene.start('MenuScene');
+        });
+      }
+
   ready(function(){
     if(typeof Phaser === 'undefined'){
       var s = document.createElement('script');
@@ -281,21 +308,26 @@
       }
 
       function checkEnd(){
-        if(enemy.hp<=0){ appendLog(`${enemy.name} defeated! You gain ${enemy.xp} XP and ${enemy.gold} gold.`); GameData.player.xp += enemy.xp; GameData.player.gold += enemy.gold; // level up
-          if(GameData.player.xp >= GameData.player.level*30){ GameData.player.xp -= GameData.player.level*30; GameData.player.level++; GameData.player.maxHp += 8; GameData.player.atk += 2; appendLog('You leveled up!'); }
+        if(enemy.hp<=0){
+          // victory flow: show modal with rewards
+          GameData.player.xp += enemy.xp;
+          GameData.player.gold += enemy.gold;
           // handle drops
+          const found = [];
           if(enemy.drops && enemy.drops.length){
-            enemy.drops.forEach(d=>{
-              if(Math.random() < d.chance){ GameData.player.inventory.push(d.id); appendLog(`Found item: ${d.name}`); }
-            });
+            enemy.drops.forEach(d=>{ if(Math.random() < d.chance){ GameData.player.inventory.push(d.id); found.push(d.name); } });
           }
           // quest progression
           GameData.quests.forEach(q=>{
-            if(q.target===enemy.id && q.progress < q.count){ q.progress++; appendLog(`Quest '${q.name}': ${q.progress}/${q.count}`); if(q.progress>=q.count){ GameData.player.gold += q.reward.gold; GameData.player.xp += q.reward.xp; appendLog(`Quest complete! Reward: ${q.reward.gold}g, ${q.reward.xp} XP`); } }
+            if(q.target===enemy.id && q.progress < q.count){ q.progress++; }
           });
-          // save
+          // level up check
+          let leveled = false;
+          if(GameData.player.xp >= GameData.player.level*30){ GameData.player.xp -= GameData.player.level*30; GameData.player.level++; GameData.player.maxHp += 8; leveled = true; }
           GameData.player.hp = Math.min(GameData.player.maxHp, player.hp);
           saveState({player:GameData.player, quests:GameData.quests});
+          // show a victory panel in-canvas
+          showOutcome(true, enemy, { xp: enemy.xp, gold: enemy.gold, drops: found, leveled: leveled });
           atkBtn.disabled = true; healBtn.disabled = true; return true;
         }
         if(player.hp<=0){ appendLog('You were defeated...'); GameData.player.hp = 1; saveState({player:GameData.player}); atkBtn.disabled=true; healBtn.disabled=true; return true; }
@@ -338,15 +370,24 @@
       atkBtn.onclick = playerAttack;
       healBtn.onclick = playerHeal;
 
-      // create in-canvas buttons for attack/heal
-      const btnStyle = { font:'16px Arial', fill:'#fff', backgroundColor:'rgba(7,22,48,0.6)', padding:{x:8,y:6} };
-      const attackText = s.add.text(W/2-80, H-60, 'Attack', btnStyle).setOrigin(0.5).setInteractive();
-      const healText = s.add.text(W/2+80, H-60, 'Heal', btnStyle).setOrigin(0.5).setInteractive();
+      // create centered in-canvas buttons for attack/heal (centered like AdventureQuest)
+      const btnStyle = { font:'18px Arial', fill:'#fff', backgroundColor:'rgba(7,22,48,0.6)', padding:{x:12,y:8} };
+      const attackText = s.add.text(W/2-90, H-80, 'Attack', btnStyle).setOrigin(0.5).setInteractive();
+      const healText = s.add.text(W/2+90, H-80, 'Heal', btnStyle).setOrigin(0.5).setInteractive();
       attackText.on('pointerup', playerAttack);
       healText.on('pointerup', playerHeal);
       // hide DOM buttons while in-battle to avoid UI duplication
       if(atkBtn) atkBtn.style.display = 'none';
       if(healBtn) healBtn.style.display = 'none';
+
+      // style buttons to look like clickable panels
+      [attackText, healText].forEach(t=>{
+        t.setPadding(8,6,8,6);
+        t.setStyle({backgroundColor:'rgba(7,22,48,0.4)'});
+        t.setInteractive({useHandCursor:true});
+        t.on('pointerover', ()=> t.setStyle({fill:'#fff'}));
+        t.on('pointerout', ()=> t.setStyle({fill:'#fff'}));
+      });
 
       // initial messages
       appendLog(`A ${enemy.name} appears!`);

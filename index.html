@@ -6,198 +6,375 @@
   <!-- Google Search Console Verification -->
   <meta name="google-site-verification" content="XD5w6uhj00YPFUNGUNfrMXXEt750P79tMxV92ROFyqg" />
 
-  <title>UlterMonster Core</title>
+  <title>UlterMonster Core | Premium Indie Studio</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
-    :root{
-      --bg-1: #0f1724;
-      --bg-2: #071028;
-      --accent-1: #7c3aed;
+    :root {
+      --bg-1: #060b13;
+      --bg-2: #02050a;
+      --accent-1: #a855f7;
       --accent-2: #06b6d4;
-      --muted: #9ca3af;
-      --card: rgba(255,255,255,0.03);
+      --accent-gold: #f59e0b;
+      --muted: #64748b;
+      --card-bg: rgba(10, 18, 36, 0.4);
+      --card-border: rgba(168, 85, 247, 0.1);
     }
-    html,body{height:100%;}
+
+    html, body {
+      height: 100%;
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-      background: radial-gradient(800px 400px at 10% 10%, rgba(124,58,237,0.08), transparent),
-                  radial-gradient(600px 300px at 90% 90%, rgba(6,182,212,0.06), transparent),
-                  linear-gradient(180deg,var(--bg-1),var(--bg-2));
-      color: #eef2ff;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      display:flex;
-      flex-direction:column;
-    }
-    header {
-      padding: 18px 32px;
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+      background: 
+        radial-gradient(1000px 500px at 0% 0%, rgba(168, 85, 247, 0.15), transparent),
+        radial-gradient(800px 400px at 100% 100%, rgba(6, 182, 212, 0.12), transparent),
+        var(--bg-2);
+      color: #f8fafc;
+      -webkit-font-smoothing: antialiased;
       display: flex;
-      justify-content: flex-start;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Cosmic Grid Background Effect */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    header {
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 18px;
-      background: linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
-      backdrop-filter: blur(6px);
-      border-bottom: 1px solid rgba(255,255,255,0.03);
+      background: rgba(6, 11, 19, 0.6);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       position: sticky;
       top: 0;
-      z-index: 20;
+      z-index: 50;
     }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-2);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--accent-2);
+    }
+
     .logo {
-      font-weight: 800;
-      letter-spacing: 0.12em;
+      font-weight: 900;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
       font-size: 16px;
-      background: linear-gradient(90deg,var(--accent-1),var(--accent-2));
+      background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
     }
+
     main {
-      max-width: 1100px;
-      margin: 32px auto;
-      padding: 32px 20px 96px;
-      width:100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 64px 24px 120px;
+      width: 100%;
       box-sizing: border-box;
     }
+
+    /* Epic Interactive Hero Segment */
     .hero {
-      display:flex;
-      gap:24px;
-      align-items:center;
-      margin-bottom:28px;
+      text-align: center;
+      margin-bottom: 80px;
+      position: relative;
     }
-    .hero-graphic{
-      width:140px;height:140px;border-radius:22px;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
-      box-shadow: 0 8px 30px rgba(2,6,23,0.6);display:flex;align-items:center;justify-content:center;font-size:48px;color:white;font-weight:800;
-      flex-shrink: 0;
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(168, 85, 247, 0.1);
+      border: 1px solid rgba(168, 85, 247, 0.2);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #d8b4fe;
+      margin-bottom: 24px;
     }
+
     .hero-title {
-      font-size:40px;
-      font-weight:800;
-      margin:0 0 6px 0;
-      line-height:1.02;
-      background: linear-gradient(90deg,#fff, #dbeafe 60%);
+      font-size: 54px;
+      font-weight: 900;
+      margin: 0 0 16px 0;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 30%, #94a3b8);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      letter-spacing:-0.01em;
     }
+
     .hero-subtitle {
-      font-size:16px;
-      color:var(--muted);
-      margin:0;
-      max-width:780px;
+      font-size: 18px;
+      color: #94a3b8;
+      margin: 0 auto;
+      max-width: 640px;
+      line-height: 1.6;
     }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .section-header h2 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #f1f5f9;
+      margin: 0;
+    }
+
+    .section-line {
+      flex-grow: 1;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), transparent);
+    }
+
+    /* Expanded Grid and Animated Glass Cards */
     .apps-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 18px;
-      margin-top: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
     }
+
     .app-card {
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border-radius: 14px;
-      padding: 18px;
-      border: 1px solid rgba(255,255,255,0.03);
-      box-shadow: 0 6px 18px rgba(2,6,23,0.6);
-      transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms;
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 28px;
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(8px);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
     }
-    .app-card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(2,6,23,0.7)}
-    .app-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-    .app-icon{width:44px;height:44px;border-radius:10px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink: 0;}
-    .app-name{font-size:18px;font-weight:700}
-    .app-tagline{font-size:13px;color:var(--muted);margin:6px 0 16px;line-height:1.4;}
-    .app-links{margin-top: auto;}
-    .app-links a{font-size:13px;color:var(--accent-2);padding:6px 14px;border-radius:999px;border:1px solid rgba(6,182,212,0.12);text-decoration:none;display:inline-block;}
-    footer{max-width:1100px;margin:auto auto 0 auto;padding:28px 20px 56px;font-size:13px;color:rgba(255,255,255,0.6);border-top:1px solid rgba(255,255,255,0.02);width:100%;box-sizing: border-box;}
 
-    #contact-btn{position:fixed;right:22px;bottom:22px;z-index:60;display:inline-flex;align-items:center;gap:10px;padding:12px 16px;border-radius:999px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:white;text-decoration:none;box-shadow:0 10px 30px rgba(7,22,48,0.6);border:1px solid rgba(255,255,255,0.06);font-weight:700}
-    #contact-btn:hover{transform:translateY(-4px)}
-    @keyframes floaty{0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(0)}}
-    #contact-btn{animation:floaty 4s ease-in-out infinite}
+    .app-card:hover {
+      transform: translateY(-6px) scale(1.01);
+      border-color: rgba(168, 85, 247, 0.3);
+      box-shadow: 0 20px 40px -15px rgba(2, 6, 23, 0.9), 0 0 30px rgba(168, 85, 247, 0.05);
+    }
 
-    @media (max-width: 600px) {
-      .hero-title{font-size:28px}
-      .hero{flex-direction:column;align-items:flex-start}
-      .hero-graphic{width:100px;height:100px;font-size:36px;}
+    /* Gold Glow Accent For Games */
+    .app-card.game-card:hover {
+      border-color: rgba(245, 158, 11, 0.3);
+      box-shadow: 0 20px 40px -15px rgba(2, 6, 23, 0.9), 0 0 30px rgba(245, 158, 11, 0.05);
+    }
+
+    .app-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .app-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.05);
+    }
+
+    .app-name {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    .app-status {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+
+    .status-live { background: rgba(6, 182, 212, 0.1); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.2); }
+
+    .app-tagline {
+      font-size: 14px;
+      color: #94a3b8;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .app-links {
+      margin-top: 24px;
+    }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      font-size: 13px;
+      font-weight: 700;
+      color: #02050a;
+      background: #fff;
+      padding: 12px 16px;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      box-sizing: border-box;
+    }
+
+    .btn-download:hover {
+      background: var(--accent-2);
+      color: #02050a;
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+    }
+
+    .btn-download.game-btn {
+      background: linear-gradient(90deg, #f59e0b, #ea580c);
+      color: #fff;
+    }
+
+    .btn-download.game-btn:hover {
+      background: linear-gradient(90deg, #fbbf24, #f97316);
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+    }
+
+    footer {
+      max-width: 1200px;
+      margin: auto auto 0 auto;
+      padding: 40px 24px;
+      width: 100%;
+      font-size: 13px;
+      color: var(--muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.03);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-sizing: border-box;
+    }
+
+    #contact-btn {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 60;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 22px;
+      border-radius: 999px;
+      background: rgba(6, 11, 19, 0.8);
+      backdrop-filter: blur(12px);
+      color: white;
+      text-decoration: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid rgba(168, 85, 247, 0.2);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      transition: all 0.3s ease;
+    }
+
+    #contact-btn:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent-2);
+      box-shadow: 0 15px 30px rgba(6, 182, 212, 0.2);
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { border-color: rgba(168, 85, 247, 0.2); }
+      50% { border-color: rgba(6, 182, 212, 0.4); }
+    }
+
+    #contact-btn {
+      animation: pulseGlow 4s ease-in-out infinite;
+    }
+
+    @media (max-width: 768px) {
+      .hero-title { font-size: 38px; }
+      .hero-subtitle { font-size: 15px; }
+      header { padding: 20px 24px; }
+      footer { flex-direction: column; gap: 16px; text-align: center; }
     }
   </style>
 </head>
 
 <body>
   <header>
-    <div class="logo">UlterMonster Core</div>
+    <div class="logo-container">
+      <div class="logo-dot"></div>
+      <div class="logo">UlterMonster Core</div>
+    </div>
   </header>
 
   <main>
     <section class="hero">
-      <div class="hero-graphic">UMC</div>
-      <div>
-        <h1 class="hero-title">Indie apps built fast, shipped clean.</h1>
-        <p class="hero-subtitle">A small collection of focused tools from UlterMonster Core — simple, reliable, and designed to just work. Built with care, shipped with pride.</p>
+      <div class="hero-badge">
+        <span>⚡ System Status: Active</span>
       </div>
+      <h1 class="hero-title">Indie apps built fast,<br>shipped clean.</h1>
+      <p class="hero-subtitle">
+        A premium ecosystem of high-utility mobile frameworks and complex logic puzzles engineered by UlterMonster Core. Clean performance layouts, built with pride.
+      </p>
     </section>
 
     <section id="apps">
-      <h2>Apps</h2>
+      <div class="section-header">
+        <h2>App Pipeline</h2>
+        <div class="section-line"></div>
+      </div>
+
       <div class="apps-grid">
         <!-- Card 1: Crown Quest -->
-        <article class="app-card">
+        <article class="app-card game-card">
           <div>
             <div class="app-head">
-              <div class="app-icon">👑</div>
-              <div class="app-name">Crown Quest</div>
+              <div class="app-icon" style="background: rgba(245, 158, 11, 0.05); border-color: rgba(245, 158, 11, 0.15);">👑</div>
+              <div>
+                <div class="app-name">Crown Quest</div>
+                <div class="app-status status-live" style="color: #fbbf24; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2);">Strategy Game</div>
+              </div>
             </div>
-            <p class="app-tagline">Embark on a medieval puzzle journey. Place your crowns and master the grid.</p>
-          </div>
-          <div class="app-links">
-            <a href="https://google.com" target="_blank" rel="noopener noreferrer">Google Play</a>
-          </div>
-        </article>
-
-        <!-- Card 2: Grocery Star -->
-        <article class="app-card">
-          <div>
-            <div class="app-head">
-              <div class="app-icon">🛒</div>
-              <div class="app-name">Grocery Star</div>
-            </div>
-            <p class="app-tagline">Share grocery lists with family members so everyone shops from the same list.</p>
-          </div>
-          <div class="app-links">
-            <a href="https://google.com" target="_blank" rel="noopener noreferrer">Google Play</a>
-          </div>
-        </article>
-
-        <!-- Card 3: MedRemindr -->
-        <article class="app-card">
-          <div>
-            <div class="app-head">
-              <div class="app-icon">💊</div>
-              <div class="app-name">MedRemindr</div>
-            </div>
-            <p class="app-tagline">Smart medication reminders with clean, safe data handling.</p>
-          </div>
-          <div class="app-links">
-            <a href="https://google.com" target="_blank" rel="noopener noreferrer">Google Play</a>
-          </div>
-        </article>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    &copy; <span id="year"></span> UlterMonster Core. All rights reserved.
-  </footer>
-
-  <a id="contact-btn" href="mailto:ultermonster@://gmail.com">📧 Contact Me</a>
-
-  <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
-  </script>
-</body>
-</html>

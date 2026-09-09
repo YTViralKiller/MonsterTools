@@ -186,9 +186,12 @@
       // pick enemy
       const enemyTemplate = Phaser.Utils.Array.GetRandom(GameData.enemies);
       const enemy = Object.assign({}, enemyTemplate);
+      // ensure runtime hp value
+      enemy.hp = enemy.maxHp;
 
       // Entities
       const player = Object.assign({}, GameData.player);
+      if (typeof player.hp === 'undefined' || player.hp === null) player.hp = player.maxHp;
 
       // sprites (use generated textures if present)
       let pSprite, eSprite;
@@ -202,6 +205,10 @@
       } else {
         eSprite = s.add.rectangle(480,180,96,96,0x06b6d4).setStrokeStyle(3,0x03474b);
       }
+
+      // expose positions for tweens/emitter logic
+      player.x = pSprite.x; player.y = pSprite.y;
+      enemy.x = eSprite.x; enemy.y = eSprite.y;
 
       s.add.text(160,320, player.name, { font:'14px Arial', fill:'#fff' }).setOrigin(0.5);
       s.add.text(480,100, enemy.name, { font:'14px Arial', fill:'#fff' }).setOrigin(0.5);

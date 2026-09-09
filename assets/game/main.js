@@ -57,7 +57,12 @@
     BootScene.prototype = Object.create(Phaser.Scene.prototype);
     BootScene.prototype.constructor = BootScene;
     BootScene.prototype.preload = function(){
-      // small font preload via CSS is fine; we draw shapes programmatically
+      // create programmatic textures if assets helper exists
+      try{
+        if(window.GameAssets && typeof window.GameAssets.createCharacterTextures === 'function'){
+          window.GameAssets.createCharacterTextures(this);
+        }
+      }catch(e){ console.warn('GameAssets not available', e); }
     };
     BootScene.prototype.create = function(){
       // If saved state exists, load
@@ -167,9 +172,18 @@
       // Entities
       const player = Object.assign({}, GameData.player);
 
-      // sprites
-      const pSprite = s.add.rectangle(160,240,96,96,0x7c3aed).setStrokeStyle(3,0x2b1650);
-      const eSprite = s.add.rectangle(480,180,96,96,0x06b6d4).setStrokeStyle(3,0x03474b);
+      // sprites (use generated textures if present)
+      let pSprite, eSprite;
+      if(s.textures.exists('char-player')){
+        pSprite = s.add.image(160,240,'char-player').setDisplaySize(96,96);
+      } else {
+        pSprite = s.add.rectangle(160,240,96,96,0x7c3aed).setStrokeStyle(3,0x2b1650);
+      }
+      if(s.textures.exists('char-enemy')){
+        eSprite = s.add.image(480,180,'char-enemy').setDisplaySize(96,96);
+      } else {
+        eSprite = s.add.rectangle(480,180,96,96,0x06b6d4).setStrokeStyle(3,0x03474b);
+      }
 
       s.add.text(160,320, player.name, { font:'14px Arial', fill:'#fff' }).setOrigin(0.5);
       s.add.text(480,100, enemy.name, { font:'14px Arial', fill:'#fff' }).setOrigin(0.5);

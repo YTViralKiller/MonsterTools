@@ -262,7 +262,8 @@
 
       const eBarBg = s.add.rectangle(480,140,140,16,0x0b1220).setOrigin(0.5);
       const eBar = s.add.rectangle(410,140,140,16,0x88ff88).setOrigin(0,0.5);
-      const eText = s.add.text(480,140,`${enemy.hp}/${enemy.maxHp}`,{font:'12px Arial',fill:'#fff'}).setOrigin(0.5);
+      const initialEnemyHp = (typeof enemy.hp === 'number') ? enemy.hp : enemy.maxHp;
+      const eText = s.add.text(480,140,`${initialEnemyHp}/${enemy.maxHp}`,{font:'12px Arial',fill:'#fff'}).setOrigin(0.5);
 
       // connect DOM buttons
       const logEl = document.getElementById('game-log');
@@ -273,8 +274,10 @@
       atkBtn.disabled = false; healBtn.disabled = false;
 
       function updateUI(){
-        const pw = Phaser.Math.Clamp(player.hp/player.maxHp,0,1)*140; pBar.width = pw; pText.setText(`${player.hp}/${player.maxHp}`);
-        const ew = Phaser.Math.Clamp(enemy.hp/enemy.maxHp,0,1)*140; eBar.width = ew; eText.setText(`${enemy.hp}/${enemy.maxHp}`);
+        const pHp = Number(player.hp) || 0;
+        const pw = Phaser.Math.Clamp(pHp/player.maxHp,0,1)*140; pBar.width = pw; pText.setText(`${pHp}/${player.maxHp}`);
+        const eHp = (typeof enemy.hp === 'number') ? enemy.hp : Number(enemy.hp) || enemy.maxHp;
+        const ew = Phaser.Math.Clamp(eHp/enemy.maxHp,0,1)*140; eBar.width = ew; eText.setText(`${eHp}/${enemy.maxHp}`);
       }
 
       function checkEnd(){
@@ -302,42 +305,58 @@
       function enemyTurn(){
         const roll = Math.random();
         if(roll<0.8){ const dmg = Phaser.Math.Between(enemy.atk-3, enemy.atk+3); player.hp = Math.max(0, player.hp - dmg); appendLog(`${enemy.name} hits you for ${dmg}.`); s.tweens.add({targets:pSprite, scale:1.08, yoyo:true, duration:120}); }
-        else { const heal = Phaser.Math.Between(6,14); enemy.hp = Math.min(enemy.maxHp, enemy.hp + heal); appendLog(`${enemy.name} heals ${heal}.`); }
+        else { const heal = Phaser.Math.Between(6,14); enemy.hp = Math.min(enemy.maxHp, (Number(enemy.hp)||0) + heal); appendLog(`${enemy.name} heals ${heal}.`); }
         updateUI();
         checkEnd();
       }
 
-      atkBtn.onclick = function(){
+      // define player action handlers and create canvas buttons
+      function playerAttack(){
         if(atkBtn.disabled) return;
         const dmg = Phaser.Math.Between(player.atk-4, player.atk+6);
-        enemy.hp = Math.max(0, enemy.hp - dmg);
+        enemy.hp = Math.max(0, (Number(enemy.hp)||enemy.maxHp) - dmg);
         appendLog(`You hit ${enemy.name} for ${dmg}.`);
         s.tweens.add({targets:eSprite, x:enemy.x-6, yoyo:true, duration:120});
-        // particle burst and sound
         try{ if(s.add.particles){ const parts = s.add.particles('char-enemy') ; const emitter = parts.createEmitter({ x: enemy.x, y: enemy.y, speed: { min: 40, max: 120 }, angle: { min: 0, max: 360 }, lifespan: 400, scale: { start: 0.5, end: 0 }, blendMode: 'ADD', quantity: 6 }); s.time.delayedCall(300, ()=>{ emitter.stop(); parts.destroy(); }); } }catch(e){}
-        try{ if(window.gameControls) window.gameControls && window.gameControls._play && window.gameControls._play(); }catch(e){}
         AudioHelper.beep(520,0.08);
         updateUI();
         if(!checkEnd()) setTimeout(enemyTurn, 700);
-      };
+      }
 
-      healBtn.onclick = function(){
+      function playerHeal(){
         if(healBtn.disabled) return;
         const heal = Phaser.Math.Between(12,28);
-        player.hp = Math.min(player.maxHp, player.hp + heal);
+        player.hp = Math.min(player.maxHp, Number(player.hp) + heal);
         appendLog(`You heal ${heal} HP.`);
         s.tweens.add({targets:pSprite, scale:1.06, yoyo:true, duration:120});
         AudioHelper.beep(360,0.12);
         updateUI();
         setTimeout(enemyTurn,700);
-      };
+      }
+
+      // wire DOM buttons to these handlers
+      atkBtn.onclick = playerAttack;
+      healBtn.onclick = playerHeal;
+
+      // create in-canvas buttons for attack/heal
+      const btnStyle = { font:'16px Arial', fill:'#fff', backgroundColor:'rgba(7,22,48,0.6)', padding:{x:8,y:6} };
+      const attackText = s.add.text(W/2-80, H-60, 'Attack', btnStyle).setOrigin(0.5).setInteractive();
+      const healText = s.add.text(W/2+80, H-60, 'Heal', btnStyle).setOrigin(0.5).setInteractive();
+      attackText.on('pointerup', playerAttack);
+      healText.on('pointerup', playerHeal);
+      // hide DOM buttons while in-battle to avoid UI duplication
+      if(atkBtn) atkBtn.style.display = 'none';
+      if(healBtn) healBtn.style.display = 'none';
 
       // initial messages
       appendLog(`A ${enemy.name} appears!`);
       updateUI();
 
       // on exit, apply player hp back to GameData
-      this.events.on('shutdown', function(){ GameData.player.hp = player.hp; saveState({player:GameData.player}); });
+      this.events.on('shutdown', function(){ GameData.player.hp = player.hp; saveState({player:GameData.player});
+        // restore DOM buttons
+        try{ var atk=document.getElementById('attack-btn'), heal=document.getElementById('heal-btn'); if(atk) atk.style.display=''; if(heal) heal.style.display=''; }catch(e){}
+      });
     };
 
     // Helper to append to DOM log from scenes

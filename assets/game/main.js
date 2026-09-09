@@ -296,6 +296,15 @@
       const logEl = document.getElementById('game-log');
       function appendLog(msg){ const p = document.createElement('div'); p.textContent = msg; logEl.prepend(p); }
 
+      // create in-canvas stat texts (so data appears inside the battle box)
+      const battleCenterX = W/2, battleCenterY = H/2;
+      const statStyle = { font:'14px Arial', fill:'#dbeafe' };
+      const pStatText = s.add.text(120, 40, '', statStyle).setDepth(900);
+      const eStatText = s.add.text(W-200, 40, '', statStyle).setDepth(900).setOrigin(0,0);
+
+      // hide DOM sidebar while in battle
+      try{ var controls = document.getElementById('game-controls'); if(controls) controls.style.display = 'none'; }catch(e){}
+
       const atkBtn = document.getElementById('attack-btn');
       const healBtn = document.getElementById('heal-btn');
       atkBtn.disabled = false; healBtn.disabled = false;
@@ -305,6 +314,9 @@
         const pw = Phaser.Math.Clamp(pHp/player.maxHp,0,1)*140; pBar.width = pw; pText.setText(`${pHp}/${player.maxHp}`);
         const eHp = (typeof enemy.hp === 'number') ? enemy.hp : Number(enemy.hp) || enemy.maxHp;
         const ew = Phaser.Math.Clamp(eHp/enemy.maxHp,0,1)*140; eBar.width = ew; eText.setText(`${eHp}/${enemy.maxHp}`);
+        // update in-canvas stats
+        pStatText.setText(`HP: ${pHp}/${player.maxHp}\nATK: ${player.atk}`);
+        eStatText.setText(`${enemy.name}\nHP: ${eHp}/${enemy.maxHp}`);
       }
 
       function checkEnd(){
@@ -336,8 +348,8 @@
 
       function enemyTurn(){
         const roll = Math.random();
-        if(roll<0.8){ const dmg = Phaser.Math.Between(enemy.atk-3, enemy.atk+3); player.hp = Math.max(0, player.hp - dmg); appendLog(`${enemy.name} hits you for ${dmg}.`); s.tweens.add({targets:pSprite, scale:1.08, yoyo:true, duration:120}); }
-        else { const heal = Phaser.Math.Between(6,14); enemy.hp = Math.min(enemy.maxHp, (Number(enemy.hp)||0) + heal); appendLog(`${enemy.name} heals ${heal}.`); }
+        if(roll<0.8){ const dmg = Phaser.Math.Between(enemy.atk-3, enemy.atk+3); player.hp = Math.max(0, player.hp - dmg); showFloatingNumber(player.x, player.y - 40, `-${dmg}`, '#ffcccb'); s.tweens.add({targets:pSprite, scale:1.08, yoyo:true, duration:120}); }
+        else { const heal = Phaser.Math.Between(6,14); enemy.hp = Math.min(enemy.maxHp, (Number(enemy.hp)||0) + heal); showFloatingNumber(enemy.x, enemy.y - 40, `+${heal}`, '#a2f5a2'); }
         updateUI();
         checkEnd();
       }
@@ -347,7 +359,8 @@
         if(atkBtn.disabled) return;
         const dmg = Phaser.Math.Between(player.atk-4, player.atk+6);
         enemy.hp = Math.max(0, (Number(enemy.hp)||enemy.maxHp) - dmg);
-        appendLog(`You hit ${enemy.name} for ${dmg}.`);
+        // show floating damage on enemy
+        showFloatingNumber(enemy.x, enemy.y - 40, `-${dmg}`, '#ffcccb');
         s.tweens.add({targets:eSprite, x:enemy.x-6, yoyo:true, duration:120});
         try{ if(s.add.particles){ const parts = s.add.particles('char-enemy') ; const emitter = parts.createEmitter({ x: enemy.x, y: enemy.y, speed: { min: 40, max: 120 }, angle: { min: 0, max: 360 }, lifespan: 400, scale: { start: 0.5, end: 0 }, blendMode: 'ADD', quantity: 6 }); s.time.delayedCall(300, ()=>{ emitter.stop(); parts.destroy(); }); } }catch(e){}
         AudioHelper.beep(520,0.08);
@@ -359,7 +372,8 @@
         if(healBtn.disabled) return;
         const heal = Phaser.Math.Between(12,28);
         player.hp = Math.min(player.maxHp, Number(player.hp) + heal);
-        appendLog(`You heal ${heal} HP.`);
+        // floating heal number
+        showFloatingNumber(player.x, player.y - 40, `+${heal}`, '#a2f5a2');
         s.tweens.add({targets:pSprite, scale:1.06, yoyo:true, duration:120});
         AudioHelper.beep(360,0.12);
         updateUI();
@@ -383,6 +397,12 @@
       if(atkBtn) atkBtn.style.display = 'none';
       if(healBtn) healBtn.style.display = 'none';
 
+      // floating number helper
+      function showFloatingNumber(x,y,text,color){
+        const t = s.add.text(x,y,text,{ font:'18px Arial', fill: color, stroke:'#000', strokeThickness:3 }).setOrigin(0.5).setDepth(1500);
+        s.tweens.add({ targets: t, y: y-40, alpha:0, duration:900, ease:'Cubic.easeOut', onComplete: ()=> t.destroy() });
+      }
+
       // style buttons to look like clickable panels
       [attackText, healText].forEach(t=>{
         t.setPadding(8,6,8,6);
@@ -399,6 +419,8 @@
       this.events.on('shutdown', function(){ GameData.player.hp = player.hp; saveState({player:GameData.player});
         // restore DOM buttons
         try{ var atk=document.getElementById('attack-btn'), heal=document.getElementById('heal-btn'); if(atk) atk.style.display=''; if(heal) heal.style.display=''; }catch(e){}
+        // restore sidebar
+        try{ var controls = document.getElementById('game-controls'); if(controls) controls.style.display = ''; }catch(e){}
       });
     };
 

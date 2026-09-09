@@ -392,8 +392,9 @@
       const cx = s.cameras.main.centerX;
       const cy = s.cameras.main.centerY;
       const btnStyle = { font:'18px Arial', fill:'#fff', backgroundColor:'rgba(7,22,48,0.6)', padding:{x:12,y:8} };
-      const attackText = s.add.text(cx-90, cy+120, 'Attack', btnStyle).setOrigin(0.5).setInteractive({ useHandCursor: true });
-      const healText = s.add.text(cx+90, cy+120, 'Heal', btnStyle).setOrigin(0.5).setInteractive({ useHandCursor: true });
+      // stacked vertical buttons in the middle: Attack above Heal
+      const attackText = s.add.text(cx, cy+80, 'Attack', btnStyle).setOrigin(0.5).setInteractive({ useHandCursor: true });
+      const healText = s.add.text(cx, cy+140, 'Heal', btnStyle).setOrigin(0.5).setInteractive({ useHandCursor: true });
       attackText.setDepth(1000); healText.setDepth(1000);
       attackText.on('pointerup', playerAttack);
       healText.on('pointerup', playerHeal);

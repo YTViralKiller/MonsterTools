@@ -158,6 +158,7 @@
   <header>
     <div class="logo">UlterMonster Core</div>
     <a id="youtube-link" href="https://www.youtube.com/channel/UCaQTHsAhmvXSngD_FdL1qKQ" target="_blank" rel="noopener noreferrer" aria-label="UlterMonster Wrestling on YouTube">▶ UlterMonster Wrestling</a>
+    <a id="game-tab" href="#" style="margin-left:8px;" onclick="showGame();return false;" aria-label="Open game">🎮 Game</a>
   </header>
 
   <main>
@@ -166,6 +167,29 @@
       <div>
         <h1 class="hero-title">Indie apps built fast, shipped clean.</h1>
         <p class="hero-subtitle">A small collection of focused tools from UlterMonster Core — simple, reliable, and designed to just work. Built with care, shipped with pride.</p>
+      </div>
+    </section>
+
+    <!-- Embedded game section (hidden by default) -->
+    <section id="game-section" style="display:none; margin-top:28px;">
+      <h2>Game</h2>
+      <div id="game-container" style="width:100%;max-width:900px;height:480px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 6px 18px rgba(2,6,23,0.6);padding:12px;box-sizing:border-box;">
+        <div id="game-ui" style="display:flex;height:100%;gap:12px;">
+          <div id="phaser-root" style="flex:1; background:transparent;">
+            <!-- Phaser canvas will be injected here -->
+          </div>
+          <div id="game-controls" style="width:260px;color:var(--muted);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <strong style="color:var(--accent-2);">UlterMonster Arena</strong>
+              <button id="exit-game" style="background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:6px 8px;border-radius:8px;" onclick="hideGame()">Exit</button>
+            </div>
+            <div id="game-log" style="background:rgba(255,255,255,0.02);padding:8px;border-radius:8px;height:340px;overflow:auto;color:#dbeafe;font-size:13px;">Welcome to the demo arena. Use Attack/Heal to fight an enemy.</div>
+            <div style="margin-top:8px;display:flex;gap:8px;">
+              <button id="attack-btn" style="flex:1;padding:10px;border-radius:10px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;color:white;font-weight:700;">Attack</button>
+              <button id="heal-btn" style="flex:1;padding:10px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);color:var(--muted);">Heal</button>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -227,17 +251,45 @@
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
 
-    // If the page was opened with a hash (e.g., /#apps), remove it without reloading
-    // so the canonical URL stays at the root. This also prevents automatic scrolling.
+    // Game show/hide and fragment cleanup
     (function(){
       try {
         if (window.location.hash) {
-          // Replace the current history entry to remove the fragment identifier
           history.replaceState(null, document.title, window.location.pathname + window.location.search);
         }
-      } catch (e) {
-        // ignore errors (older browsers)
+      } catch(e){}
+
+      var gameLoaded = false;
+      function loadGameScript(cb){
+        if (gameLoaded) return cb && cb();
+        var s = document.createElement('script');
+        s.src = 'assets/game/main.js';
+        s.onload = function(){ gameLoaded = true; cb && cb(); };
+        s.onerror = function(){ console.error('Failed to load game script'); cb && cb(); };
+        document.body.appendChild(s);
       }
+
+      window.showGame = function(){
+        document.getElementById('game-section').style.display = 'block';
+        // load game script once
+        loadGameScript(function(){
+          // enable controls
+          var atk = document.getElementById('attack-btn');
+          var heal = document.getElementById('heal-btn');
+          if(atk) atk.disabled = false;
+          if(heal) heal.disabled = false;
+          // add focus to log
+          var log = document.getElementById('game-log'); if(log) log.scrollTop = 0;
+        });
+        // scroll to game section
+        document.getElementById('game-section').scrollIntoView({behavior:'smooth'});
+      };
+
+      window.hideGame = function(){
+        // try to destroy phaser instance if present
+        try{ if(window._phaserGame){ window._phaserGame.destroy(true); delete window._phaserGame; } }catch(e){}
+        document.getElementById('game-section').style.display = 'none';
+      };
     })();
   </script>
 </body>

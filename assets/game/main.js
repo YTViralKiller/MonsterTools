@@ -475,7 +475,20 @@
           showOutcome(true, enemy, { xp: enemy.xp, gold: enemy.gold, drops: found, leveled: leveled });
           atkBtn.disabled = true; healBtn.disabled = true; return true;
         }
-        if(player.hp<=0){ appendLog('You were defeated...'); GameData.player.hp = 1; saveState({player:GameData.player}); atkBtn.disabled=true; healBtn.disabled=true; return true; }
+        if(player.hp<=0){
+          appendLog('You were defeated...');
+          // defeat penalty: lose 10% of XP-to-next-level
+          const needed = GameData.player.level*30 - GameData.player.xp;
+          const loss = Math.ceil(Math.max(0, needed) * 0.10);
+          GameData.player.xp = Math.max(0, GameData.player.xp - loss);
+          saveState({player:GameData.player});
+          // restore HP and mana to max after defeat
+          GameData.player.hp = GameData.player.maxHp;
+          GameData.player.mana = GameData.player.maxMana;
+          // show defeat modal (no rewards)
+          try{ showOutcome(false, enemy, { lostXP: loss }); }catch(e){}
+          atkBtn.disabled=true; healBtn.disabled=true; return true;
+        }
         return false;
       }
 

@@ -28,14 +28,14 @@
         const titleColor = victory ? '#7ee3ff' : '#ff9b9b';
         const titleText = scene.add.text(sw/2, sh/2 - 120, victory ? 'Victory!' : 'Defeat', { font:'56px Arial', fill: titleColor, stroke:'#001726', strokeThickness:6 }).setOrigin(0.5).setDepth(2001);
 
-        // parchment-style reward box
-        const panelW = Math.min(360, Math.floor(sw * 0.45));
+        // parchment-style reward box (centered)
+        const panelW = Math.min(420, Math.floor(sw * 0.5));
         const panelH = Math.floor(sh * 0.42);
-        const panelX = sw/2 + 40;
+        const panelX = sw/2;
         const panelY = sh/2;
         const parchment = scene.add.rectangle(panelX, panelY, panelW, panelH, 0xfbf3d5).setDepth(2000).setStrokeStyle(3, 0x8b6f3f);
-        // subtle torn edges via small circles
-        for(let i=0;i<6;i++){ scene.add.circle(panelX - panelW/2 + 10 + i*60, panelY - panelH/2 + 6, 8, 0xf3e7c7).setDepth(1999); }
+        // subtle torn edges via small circles (centered)
+        for(let i=0;i<6;i++){ scene.add.circle(panelX - panelW/2 + 12 + i*(panelW/6 - 4), panelY - panelH/2 + 8, 8, 0xf3e7c7).setDepth(1999); }
 
         // content inside parchment
         const lines = [];
@@ -52,32 +52,27 @@
           lines.push(lossMsg);
         }
 
-        const bodyStartY = panelY - Math.floor(panelH/2) + 36;
+        const bodyStartY = panelY - Math.floor(panelH/2) + 40;
         lines.forEach((ln, idx)=>{
-          scene.add.text(panelX, bodyStartY + idx*28, ln, { font:'18px Georgia', fill:'#2b2b2b' }).setOrigin(0.5).setDepth(2001);
+          scene.add.text(panelX, bodyStartY + idx*30, ln, { font:'18px Georgia', fill:'#2b2b2b' }).setOrigin(0.5).setDepth(2001);
         });
 
-        // coin shower for victory
+        // coin shower for victory (centered above parchment)
         if(victory){
           for(let i=0;i<10;i++){
-            const cx = panelX - panelW/2 + Math.random()*panelW;
+            const cx = panelX - panelW/2 + 16 + Math.random()*(panelW-32);
             const c = scene.add.circle(cx, panelY - panelH/2 - 20 - Math.random()*40, 10, 0xffd54a).setDepth(1998).setAlpha(0.95);
             scene.tweens.add({ targets: c, y: panelY - panelH/2 + 20 + Math.random()*50, alpha:0.95, duration: 900 + Math.random()*400, ease:'Cubic.easeOut', onComplete: ()=> c.destroy() });
           }
         }
 
-        // saving indicator then Continue button
-        const saveText = scene.add.text(panelX, panelY + panelH/2 - 34, 'Saving...', { font:'14px Arial', fill:'#333' }).setOrigin(0.5).setDepth(2001);
-        // perform save then update text
-        try{ saveState({player:GameData.player, quests:GameData.quests}); saveText.setText('Saved.'); }catch(e){ saveText.setText('Save failed'); }
-
-        const cont = scene.add.text(sw/2, sh/2 + 120, 'Continue', { font:'20px Arial', fill:'#fff', backgroundColor:'rgba(28,120,80,0.95)', padding:{x:12,y:8} }).setOrigin(0.5).setInteractive().setDepth(2001);
-        cont.on('pointerup', ()=>{
+        // Close button centered below the parchment which returns to main menu
+        const closeBtn = scene.add.text(panelX, panelY + panelH/2 - 30, 'Close', { font:'20px Arial', fill:'#fff', backgroundColor:'rgba(28,120,80,0.95)', padding:{x:12,y:8} }).setOrigin(0.5).setInteractive().setDepth(2001);
+        closeBtn.on('pointerup', ()=>{
           try{ backdrop.destroy(); }catch(e){}
           try{ parchment.destroy(); }catch(e){}
           try{ titleText.destroy(); }catch(e){}
-          try{ saveText.destroy(); }catch(e){}
-          try{ cont.destroy(); }catch(e){}
+          try{ closeBtn.destroy(); }catch(e){}
           // restore DOM buttons
           try{ var atk=document.getElementById('attack-btn'), heal=document.getElementById('heal-btn'); if(atk) atk.style.display=''; if(heal) heal.style.display=''; }catch(e){}
           scene.scene.start('MenuScene');
